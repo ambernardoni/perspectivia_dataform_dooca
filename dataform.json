@@ -3,6 +3,8 @@
   "assertionSchema": "dataform_assertions",
   "warehouse": "bigquery",
   "defaultDatabase": "auto-6z9j2ofl-20231020",
-  "defaultLocation": "US"
+  "defaultLocation": "US",
+  "vars": {
+    "rawDataset" : "raw_Tartmello0"
+  }
 }
-    
