@@ -6,7 +6,7 @@ declare({
 
 declare({
   schema: dataform.projectConfig.vars.rawDataset,
-  name: "raw_dooca_Cagegories",
+  name: "raw_dooca_Categories",
   description: "Tabela de categorias da plataforma Dooca"
 });
 
