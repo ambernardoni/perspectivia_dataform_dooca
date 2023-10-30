@@ -6,7 +6,7 @@ config {
 
 select
   id as order_id,
-  total as value_total,
+  CAST(total AS FLOAT64) AS value_total,
   CAST(created_at AS TIMESTAMP) AS order_date
 from
   ${ref("raw_dooca_Orders")}
