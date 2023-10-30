@@ -1,0 +1,11 @@
+config {
+  type: "view",
+  schema: "staging",
+  description: "Cleaned version of orders",
+}
+
+select
+  id as order_id,
+  total as value_total
+from
+  ${ref("raw_dooca_Orders")}

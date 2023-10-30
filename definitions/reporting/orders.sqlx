@@ -1,0 +1,10 @@
+config {
+  type: "table",
+  schema: "reporting",
+  description: "Lista dos países",
+}
+
+select
+  *
+from
+  ${ref("stg_orders")}
