@@ -4,8 +4,12 @@ config {
     description: "Lista dos países",
     columns: {
         order_id: "Id único do pedido",
-        order_id2: "Id único do pedido"
-        
+        order_id2: "Id único do pedido",
+        payment: {
+          columns: {
+            method: "Método de pagamento"
+          }
+        }
     }
 }
 
