@@ -1,12 +1,70 @@
 config {
-  type: "view",
-  schema: "staging",
-  description: "Cleaned version of orders",
+    type: "view",
+    schema: "staging",
+    description: "Cleaned up version of orders"
 }
 
-select
-  id as order_id,
-  CAST(total AS FLOAT64) AS value_total,
-  CAST(created_at AS TIMESTAMP) AS order_date
-from
+SELECT
+
+  SAFE_CAST(id AS STRING) AS order_id,
+  SAFE_CAST(created_at AS TIMESTAMP) AS creation_date,
+  SAFE_CAST(updated_at AS TIMESTAMP) AS update_date,
+
+  type AS order_type,          -- Dooca guarda devolução de alguma forma?
+  type as order_type_detail,
+  status AS status_type,       -- Temos que tratar os tipos aqui
+  status AS status_type_detail,     
+
+  "e-commerce" AS point_of_sale, -- Dooca não guarda outros parâmteros aqui?
+  
+  -- -----------  value ---------------  
+  STRUCT 
+  (
+    SAFE_CAST(total AS FLOAT64) AS total,
+    0 AS items,
+    SAFE_CAST(discount AS FLOAT64) AS discounts,
+    JSON_VALUE (shipping, "$.price") AS shipping,
+    SAFE_CAST(tax AS FLOAT64) AS tax
+  ) 
+  AS value,
+
+  -- -----------  payment -------------  
+  STRUCT 
+  (
+    JSON_VALUE (payment ,"$.method") AS method,
+    JSON_VALUE (payment ,"$.name") AS method_detail -- TEMP
+  )
+  AS payment,
+
+  -- -----------  address -------------  
+  STRUCT 
+  (
+    JSON_VALUE(address, '$.zipcode') AS shipping_zipcode,
+    JSON_VALUE(address, '$.city') AS shipping_city,
+    JSON_VALUE(address, '$.state') AS shipping_state,
+    "Brasil" AS shipping_country
+  ) 
+  AS address,
+
+  -- -----------  customer ------------  
+  STRUCT 
+  (
+    SAFE_CAST(customer_id AS STRING) AS customer_id,
+    JSON_VALUE(customer, '$.name') AS name,
+    JSON_VALUE(customer, '$.cgc') AS doc_number,
+    JSON_VALUE(customer, '$.email') AS email,
+    JSON_VALUE(customer, '$.phone') AS phone
+  ) 
+  AS customer,
+
+  -- -----------  STRUCT items  --------------  
+  STRUCT 
+  (
+    0 AS quantity_total,        -- TRATAR
+    0 AS quantity_variation       -- TRATAR
+  ) 
+  AS items
+
+
+FROM
   ${ref("raw_dooca_Orders")}
