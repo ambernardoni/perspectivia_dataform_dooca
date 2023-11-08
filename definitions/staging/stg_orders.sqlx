@@ -4,6 +4,12 @@ config {
     description: "Cleaned up version of orders"
 }
 
+-- Este script organiza todas as informações de pedidos. 
+-- É ele que converte as informações no formato da plataforma para o formato da PERSPECTIVIA
+-- A maior parte da lógica de transformação está aqui.
+
+
+
 SELECT
 
   SAFE_CAST(id AS STRING) AS order_id,
@@ -12,31 +18,43 @@ SELECT
 
   type AS order_type,          -- Dooca guarda devolução de alguma forma?
   type as order_type_detail,
-  status AS status_type,       -- Temos que tratar os tipos aqui
+  ${dooca_mapping.status_type_group("status")} AS status_type,
   status AS status_type_detail,     
 
   "e-commerce" AS point_of_sale, -- Dooca não guarda outros parâmteros aqui?
+
+  ( 
+    SELECT sum (SAFE_CAST(JSON_VALUE(json_items,"$.quantity") AS INT64)) 
+      FROM UNNEST(JSON_EXTRACT_ARRAY(items, '$')) AS json_items
+  )  AS quantity_items,
+  (
+    SELECT COUNT(*)
+     FROM UNNEST(JSON_EXTRACT_ARRAY(items, '$')) AS json_items
+  ) AS quantity_variety_items,
   
-  -- -----------  value ---------------  
+  -------------  value ---------------  
   STRUCT 
   (
     SAFE_CAST(total AS FLOAT64) AS total,
-    0 AS items,
+    ( 
+      SELECT sum (SAFE_CAST(JSON_VALUE(json_items,"$.price") AS FLOAT64)) 
+        FROM UNNEST(JSON_EXTRACT_ARRAY(items, '$')) AS json_items
+    ) AS items,    
     SAFE_CAST(discount AS FLOAT64) AS discounts,
-    JSON_VALUE (shipping, "$.price") AS shipping,
+    SAFE_CAST(JSON_VALUE (shipping, "$.price") AS FLOAT64) AS shipping,
     SAFE_CAST(tax AS FLOAT64) AS tax
   ) 
   AS value,
 
-  -- -----------  payment -------------  
+  -------------  payment -------------  
   STRUCT 
   (
-    JSON_VALUE (payment ,"$.method") AS method,
-    JSON_VALUE (payment ,"$.name") AS method_detail -- TEMP
+    ${dooca_mapping.payment_method_group("JSON_VALUE (payment ,\"$.method\")")} AS method,
+    JSON_VALUE (payment ,"$.method") || " - " || JSON_VALUE (payment ,"$.name") AS method_detail -- TEMP
   )
   AS payment,
 
-  -- -----------  address -------------  
+  -------------  address -------------  
   STRUCT 
   (
     JSON_VALUE(address, '$.zipcode') AS shipping_zipcode,
@@ -46,7 +64,7 @@ SELECT
   ) 
   AS address,
 
-  -- -----------  customer ------------  
+  -------------  customer ------------  
   STRUCT 
   (
     SAFE_CAST(customer_id AS STRING) AS customer_id,
@@ -57,14 +75,14 @@ SELECT
   ) 
   AS customer,
 
-  -- -----------  STRUCT items  --------------  
-  STRUCT 
-  (
-    0 AS quantity_total,        -- TRATAR
-    0 AS quantity_variation       -- TRATAR
-  ) 
-  AS items
+  -------------  items  ------------  
 
+ ARRAY(
+    SELECT AS STRUCT
+      ID.*
+    FROM ${ref("stg_order_items")} ID
+    WHERE ID.order_id = O.id
+  ) AS items
 
 FROM
-  ${ref("raw_dooca_Orders")}
+  ${ref("raw_dooca_Orders")} O

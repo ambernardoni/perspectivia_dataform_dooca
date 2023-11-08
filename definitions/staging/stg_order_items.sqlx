@@ -1,0 +1,27 @@
+config {
+    type: "view",
+    schema: "staging",
+    description: "Cleaned up version of orders"
+}
+
+-- Este script extrai as informações de produtos comprados, 
+-- e já prepara no formato certo para fazer parte dos pedidos depois como um ARRAY de STRUCT da tabela Orders
+
+SELECT
+  O.id AS order_id,
+  SAFE_CAST(JSON_VALUE(json_item, "$.product_id") AS INT64) AS product_id,
+  JSON_VALUE(json_item, "$.name") AS product_name,
+  JSON_VALUE(json_item, "$.sku") AS product_sku,
+  pc.category_name AS category_name,
+  pc.category_id AS category_id,
+  "" AS subcategory_id,
+  "" AS subcategory_name,
+  SAFE_CAST(JSON_VALUE(json_item, "$.quantity") AS INT64) AS quantity,
+  SAFE_CAST(JSON_VALUE(json_item, "$.price") AS FLOAT64) AS price_unit,
+  SAFE_CAST(JSON_VALUE(json_item, "$.discount") AS FLOAT64) AS price_discount,
+  SAFE_CAST(JSON_VALUE(json_item, "$.total") AS FLOAT64) AS price_total
+FROM
+  ${ref("raw_dooca_Orders")} O,
+  UNNEST(JSON_EXTRACT_ARRAY(O.items, '$')) AS json_item
+  LEFT JOIN ${ref("stg_product_category")} pc 
+     ON SAFE_CAST(JSON_VALUE(json_item,"$.product_id") AS INT64)  = pc.product_id
