@@ -1,0 +1,23 @@
+config {
+    type: "view",
+    schema: "reporting",
+    description: "View aberta por produtos"
+}
+
+SELECT
+  STRUCT (
+    it.product_name,
+    it.product_sku,
+    it.category_id,
+    it.category_name,
+    it.subcategory_id,
+    it.subcategory_name,
+    it.quantity,
+    it.price_total,
+    it.price_unit,
+    it.price_discount
+  ) as item,
+ O.*
+FROM
+  ${ref("orders")} AS O, UNNEST (items) AS it
+

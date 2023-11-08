@@ -1,0 +1,19 @@
+config {
+    type: "table",
+    schema: "staging",
+    description: "Tabela contendo a lista de produtos da loja e suas categorias"
+}
+
+SELECT 
+  prod.name as product_name,
+  prod.id as product_id,
+  cat.id as category_id,
+  cat.name as category_name
+FROM
+  ${ref("raw_dooca_Products")} prod
+JOIN
+  ${ref("raw_dooca_Categories")} cat
+ON
+  prod.category_default_id = cat.id
+
+
