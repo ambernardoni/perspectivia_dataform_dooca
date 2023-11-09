@@ -1,0 +1,18 @@
+config {
+    type: "view",
+    schema: "staging",
+    description: "All customers, with Recency, frequency  and monetary"
+}
+
+SELECT
+  customer.customer_id,
+  customer.name,
+  customer.email,
+  customer.phone,
+  COUNT (DISTINCT order_id) as frequency,
+  TIMESTAMP_DIFF(CURRENT_TIMESTAMP, MAX (creation_date),  DAY) As recency,
+  SUM (value.total) AS monetary
+FROM
+  ${ref("orders")} O
+GROUP BY 1, 2, 3, 4
+
