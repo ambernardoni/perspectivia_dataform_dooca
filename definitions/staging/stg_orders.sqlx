@@ -9,7 +9,6 @@ config {
 -- A maior parte da lógica de transformação está aqui.
 
 
-
 SELECT
 
   SAFE_CAST(id AS STRING) AS order_id,

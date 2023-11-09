@@ -1,0 +1,19 @@
+config {
+    type: "view",
+    schema: "reporting",
+    description: "View aberta por produtos"
+}
+
+SELECT
+  *,
+  NTILE(5) OVER (ORDER BY recency DESC) AS recency_score,
+  NTILE(5) OVER (ORDER BY frequency) AS frequency_score,
+  NTILE(5) OVER (ORDER BY monetary) AS monetary_Score,
+  CONCAT(CAST(NTILE(5) OVER (ORDER BY recency DESC) AS STRING),
+       CAST(NTILE(5) OVER (ORDER BY frequency) AS STRING),
+       CAST(NTILE(5) OVER (ORDER BY monetary) AS STRING)
+       ) AS rfm_score,
+   ${rfm_mapping.rfm_mapping("CONCAT(CAST(NTILE(5) OVER (ORDER BY recency DESC) AS STRING),CAST(NTILE(5) OVER (ORDER BY frequency) AS STRING))")}
+   AS rfm_label, 
+FROM
+  ${ref("stg_customer_step1")} AS O
