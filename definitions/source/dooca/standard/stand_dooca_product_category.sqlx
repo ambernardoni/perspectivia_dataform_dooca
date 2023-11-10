@@ -1,5 +1,5 @@
 config {
-    type: "table",
+    type: "view",
     schema: "standard",
     description: "Tabela contendo a lista de produtos da loja e suas categorias",
     tags: ['dooca']
