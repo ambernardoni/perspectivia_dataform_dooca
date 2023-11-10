@@ -1,7 +1,8 @@
 config {
     type: "view",
     schema: "standard",
-    description: "Cleaned up version of orders"
+    description: "Cleaned up version of orders",
+    tags: ['dooca']
 }
 
 -- Este script extrai as informações de produtos comprados, 
@@ -23,7 +24,7 @@ SELECT
 FROM
   ${ref("raw_dooca_Orders")} O,
   UNNEST(JSON_EXTRACT_ARRAY(O.items, '$')) AS json_item
-  LEFT JOIN ${ref("stand_product_category")} pc 
+  LEFT JOIN ${ref("stand_dooca_product_category")} pc 
      ON SAFE_CAST(JSON_VALUE(json_item,"$.product_id") AS INT64)  = pc.product_id
 
 

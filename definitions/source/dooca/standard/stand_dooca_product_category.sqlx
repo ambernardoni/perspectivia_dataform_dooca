@@ -1,7 +1,8 @@
 config {
     type: "table",
     schema: "standard",
-    description: "Tabela contendo a lista de produtos da loja e suas categorias"
+    description: "Tabela contendo a lista de produtos da loja e suas categorias",
+    tags: ['dooca']
 }
 
 SELECT 

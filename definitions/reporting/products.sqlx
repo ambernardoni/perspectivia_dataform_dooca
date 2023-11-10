@@ -1,7 +1,8 @@
 config {
     type: "view",
     schema: "reporting",
-    description: "View aberta por produtos"
+    description: "View aberta por produtos",
+    tags: ['1-general']
 }
 
 SELECT

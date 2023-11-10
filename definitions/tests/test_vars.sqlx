@@ -4,8 +4,10 @@
 
   SELECT 1,
   "${dataform.projectConfig.vars.rawDataset}" AS vars_rawDataset, -- essas variáveis são setadas no dataform.json, mas podem ser sobreescritas na compilação
+  "${dataform.projectConfig.vars.ecommPlatName+' test'}" AS vars_ecommPlatname, -- essas variáveis são setadas no dataform.json, mas podem ser sobreescritas na compilação
   "${dataform.projectConfig.databaseSuffix}" AS database_suffix,
   "${dataform.projectConfig.defaultSchema}" AS defaultSchema,
   "${when(1==1 , 'igual', 'diferente')}" AS when_test,
   "${name()}" As this_table_value
+
   

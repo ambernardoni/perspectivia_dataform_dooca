@@ -2,6 +2,7 @@ config {
     type: "table",
     schema: "reporting",
     description: "Lista dos países",
+    tags: ['1-general'],
     columns: {
         order_id: "Id único do pedido",
         order_id2: "Id único do pedido",
@@ -29,4 +30,4 @@ SELECT
   AS customer_stats
 
 FROM
-  ${ref("stand_orders")}
+  ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_orders")}

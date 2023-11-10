@@ -1,7 +1,8 @@
 config {
     type: "table",
     schema: "reporting",
-    description: "receita por dia"
+    description: "receita por dia",
+    tags: ['1-general']
 }
 
 SELECT
@@ -15,7 +16,7 @@ FROM
       DATE(creation_date) AS date_creation,
       SUM (value.total) AS value_total
     FROM
-      ${ref("stand_orders")}
+      ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_orders")}
     GROUP BY 1)
 AS A
 
@@ -25,7 +26,7 @@ LEFT JOIN
       DATE(creation_date) AS date_creation,
       SUM (value.total) AS value_total
     FROM
-      ${ref("stand_orders")}
+      ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_orders")}
     GROUP BY 1)
 AS B
 
