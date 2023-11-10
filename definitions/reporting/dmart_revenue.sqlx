@@ -15,7 +15,7 @@ FROM
       DATE(creation_date) AS date_creation,
       SUM (value.total) AS value_total
     FROM
-      ${ref("stg_orders")}
+      ${ref("stand_orders")}
     GROUP BY 1)
 AS A
 
@@ -25,7 +25,7 @@ LEFT JOIN
       DATE(creation_date) AS date_creation,
       SUM (value.total) AS value_total
     FROM
-      ${ref("stg_orders")}
+      ${ref("stand_orders")}
     GROUP BY 1)
 AS B
 
