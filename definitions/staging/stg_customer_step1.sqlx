@@ -1,7 +1,8 @@
 config {
     type: "view",
     schema: "staging",
-    description: "All customers, with Recency, frequency  and monetary"
+    description: "All customers, with Recency, frequency  and monetary",
+    tags: ['1-general']
 }
 
 SELECT
