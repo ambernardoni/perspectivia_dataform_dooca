@@ -1,7 +1,9 @@
 config {
     type: "view",
-    schema: "staging",
-    description: "Cleaned up version of orders"
+    schema: "standard",
+    description: "Cleaned up version of orders",
+    tags: ['dooca'],
+    disabled: false
 }
 
 -- Este script organiza todas as informações de pedidos. 
@@ -79,7 +81,7 @@ SELECT
  ARRAY(
     SELECT AS STRUCT
       ID.*
-    FROM ${ref("stg_order_items")} ID
+    FROM ${ref("stand_order_items")} ID
     WHERE ID.order_id = O.id
   ) AS items
 
