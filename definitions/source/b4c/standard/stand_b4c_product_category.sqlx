@@ -1,0 +1,21 @@
+config {
+    type: "view",
+    schema: "standard",
+    description: "Tabela contendo a lista de produtos da loja e suas categorias",
+    tags: ['b4c']
+}
+
+SELECT 
+  prod.nome as product_name,
+  prod.codigo as product_id,
+  prod.sku as product_sku,
+  cat.codigo as category_id,
+  cat.descricao as category_name
+FROM
+  ${ref("raw_b4c_Products")} prod
+LEFT JOIN
+  ${ref("raw_b4c_Categories")} cat
+ON
+  prod.codigo_categoria = cat.codigo
+
+

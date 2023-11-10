@@ -1,8 +1,10 @@
+/*
 declare({
   schema: dataform.projectConfig.vars.rawDataset,
   name: "raw_dooca_Brands",
   description: "Tabela de marcas da plataforma Dooca"
 });
+*/
 
 declare({
   schema: dataform.projectConfig.vars.rawDataset,

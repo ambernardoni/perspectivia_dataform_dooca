@@ -1,0 +1,47 @@
+
+==========================================================
+=   DOOCA
+==========================================================
+
+Configurações para desenvolver Dooca: 
+
+No dataform.json:
+
+  "schemaSuffix": "dev",
+  "vars": {
+    "rawDataset" : "raw_Tartmello0",
+    "ecommPlatName" : "dooca"
+  }
+
+
+TAG nos scripts: dooca
+
+EXECUTION: Tags
+  1-General
+  Dooca
+
+
+
+==========================================================
+=   B4C
+==========================================================
+Configurações para desenvolver Dooca: 
+
+No dataform.json:
+
+  "schemaSuffix": "dev",
+  "vars": {
+    "rawDataset" : "raw_Tfkennedy0",
+    "ecommPlatName" : "b4c"
+  }
+
+TAG nos scripts: b4c
+
+EXECUTION: Tags
+  1-General
+  Dooca
+
+
+
+
+
