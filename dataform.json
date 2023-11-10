@@ -1,9 +1,12 @@
 {
-  "defaultSchema": "dataform",
-  "assertionSchema": "dataform_assertions",
   "warehouse": "bigquery",
   "defaultDatabase": "auto-6z9j2ofl-20231020",
   "defaultLocation": "US",
+  "defaultSchema": "dataform",
+  "assertionSchema": "dataform_assertions",
+
+
+  "schemaSuffix": "dev",
   "vars": {
     "rawDataset" : "raw_Tartmello0",
     "ecommPlatName" : "dooca"
