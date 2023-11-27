@@ -25,7 +25,7 @@ EXECUTION: Tags
 ==========================================================
 =   B4C
 ==========================================================
-Configurações para desenvolver Dooca: 
+Configurações para desenvolver B4Commerce: 
 
 No dataform.json:
 
@@ -39,7 +39,7 @@ TAG nos scripts: b4c
 
 EXECUTION: Tags
   1-General
-  Dooca
+  B4c
 
 
 
