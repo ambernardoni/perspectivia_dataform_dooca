@@ -7,9 +7,8 @@ Configurações para desenvolver Dooca:
 
 No dataform.json:
 
-  "schemaSuffix": "dev",
   "vars": {
-    "rawDataset" : "raw_Tartmello0",
+    "rawDataset" : "raw_tartmello",
     "ecommPlatName" : "dooca"
   }
 
@@ -29,9 +28,8 @@ Configurações para desenvolver B4Commerce:
 
 No dataform.json:
 
-  "schemaSuffix": "dev",
   "vars": {
-    "rawDataset" : "raw_Tfkennedy0",
+    "rawDataset" : "raw_tfkennedy",
     "ecommPlatName" : "b4c"
   }
 

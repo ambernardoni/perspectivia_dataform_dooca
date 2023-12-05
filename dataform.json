@@ -1,14 +1,13 @@
 {
   "warehouse": "bigquery",
-  "defaultDatabase": "auto-6z9j2ofl-20231020",
+  "defaultDatabase": "pp-dev-dd",
   "defaultLocation": "US",
   "defaultSchema": "dataform",
   "assertionSchema": "dataform_assertions",
+  "schemaSuffix": "ppdev",
 
-
-  "schemaSuffix": "dev",
   "vars": {
-    "rawDataset" : "raw_Tfkennedy0",
+    "rawDataset" : "raw_tfkennedy",
     "ecommPlatName" : "b4c"
   }
 
