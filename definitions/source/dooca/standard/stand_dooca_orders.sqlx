@@ -10,7 +10,6 @@ config {
 -- É ele que converte as informações no formato da plataforma para o formato da PERSPECTIVIA
 -- A maior parte da lógica de transformação está aqui.
 
-
 SELECT
 
   SAFE_CAST(id AS STRING) AS order_id,
@@ -23,15 +22,6 @@ SELECT
   status AS status_type_detail,     
 
   "e-commerce" AS point_of_sale, -- Dooca não guarda outros parâmteros aqui?
-
-  ( 
-    SELECT sum (SAFE_CAST(JSON_VALUE(json_items,"$.quantity") AS INT64)) 
-      FROM UNNEST(JSON_EXTRACT_ARRAY(items, '$')) AS json_items
-  )  AS quantity_items,
-  (
-    SELECT COUNT(*)
-     FROM UNNEST(JSON_EXTRACT_ARRAY(items, '$')) AS json_items
-  ) AS quantity_variety_items,
   
   -------------  value ---------------  
   STRUCT 
@@ -50,8 +40,8 @@ SELECT
   -------------  payment -------------  
   STRUCT 
   (
-    ${dooca.payment_method_group("JSON_VALUE (payment ,\"$.method\")")} AS method,
-    JSON_VALUE (payment ,"$.method") || " - " || JSON_VALUE (payment ,"$.name") AS method_detail -- TEMP
+    JSON_VALUE (payment ,"$.method") AS method,
+    JSON_VALUE (payment ,"$.name") AS method_detail
   )
   AS payment,
 
@@ -75,15 +65,6 @@ SELECT
     JSON_VALUE(customer, '$.phone') AS phone
   ) 
   AS customer,
-
-  -------------  items  ------------  
-
- ARRAY(
-    SELECT AS STRUCT
-      ID.*
-    FROM ${ref("stand_dooca_order_items")} ID
-    WHERE ID.order_id = O.id
-  ) AS items
 
 FROM
   ${ref("raw_dooca_Orders")} O

@@ -16,13 +16,10 @@ SELECT
 
   "order" AS order_type,           -- ### VOLTAR E ARRUMAR
   "order" as order_type_detail,    -- ### VOLTAR E ARRUMAR
-  SAFE_CAST(status AS STRING) AS status_type,  -- ### VOLTAR E ARRUMAR
-  descricao_status AS status_type_detail,        -- ### VOLTAR E ARRUMAR
+  ${b4c.status_type_group("descricao_status")} AS status_type,
+  descricao_status AS status_type_detail,
 
   canal AS point_of_sale, -- Normalizar aqui?
-
-  1 AS quantity_items,
-  1 AS quantity_variety_items,
 
   -------------  value ---------------  
   STRUCT 
@@ -63,16 +60,7 @@ SELECT
     JSON_VALUE(dados_do_cliente, '$.email') AS email,
     JSON_VALUE(dados_do_cliente, '$.fone')  AS phone
   ) 
-  AS customer,
-
-  -------------  items  ------------  
- ARRAY(
-    SELECT AS STRUCT
-      ID.*
-    FROM ${ref("stand_b4c_order_items")} ID
-    WHERE ID.order_id = O.codigo
-  ) AS items
-
+  AS customer
 
 FROM
   ${ref("raw_b4c_Orders")} O

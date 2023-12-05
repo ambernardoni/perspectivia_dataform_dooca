@@ -7,9 +7,8 @@ Configurações para desenvolver Dooca:
 
 No dataform.json:
 
-  "schemaSuffix": "dev",
   "vars": {
-    "rawDataset" : "raw_Tartmello0",
+    "rawDataset" : "raw_tartmello",
     "ecommPlatName" : "dooca"
   }
 
@@ -25,13 +24,12 @@ EXECUTION: Tags
 ==========================================================
 =   B4C
 ==========================================================
-Configurações para desenvolver Dooca: 
+Configurações para desenvolver B4Commerce: 
 
 No dataform.json:
 
-  "schemaSuffix": "dev",
   "vars": {
-    "rawDataset" : "raw_Tfkennedy0",
+    "rawDataset" : "raw_tfkennedy",
     "ecommPlatName" : "b4c"
   }
 
@@ -39,7 +37,7 @@ TAG nos scripts: b4c
 
 EXECUTION: Tags
   1-General
-  Dooca
+  B4c
 
 
 

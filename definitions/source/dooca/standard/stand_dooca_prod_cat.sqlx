@@ -6,10 +6,10 @@ config {
 }
 
 SELECT 
-  prod.name as product_name,
-  prod.id as product_id,
-  cat.id as category_id,
-  cat.name as category_name
+  CAST (prod.id AS STRING) AS product_id,
+  prod.name AS product_name,
+  CAST (cat.id AS STRING) AS category_id,
+  cat.name AS category_name,
 FROM
   ${ref("raw_dooca_Products")} prod
 JOIN

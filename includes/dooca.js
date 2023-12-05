@@ -9,7 +9,7 @@ function status_type_group(status){
   end`; }
 
 
-// payment.method [Confirmado, Cancelado, Outros]
+// payment.method DEPRECATED - Não mais usado
 function payment_method_group(method){
   return `
   case
@@ -23,6 +23,5 @@ function payment_method_group(method){
   end`; }
 
 module.exports = {
-  status_type_group,
-   payment_method_group
+  status_type_group
 };
