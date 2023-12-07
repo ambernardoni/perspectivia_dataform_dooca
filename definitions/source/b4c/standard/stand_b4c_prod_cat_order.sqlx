@@ -18,22 +18,22 @@ SELECT
   SAFE_CAST(JSON_VALUE(json_item, "$.sku") AS STRING) AS  product_sku,
   prod_cat.category_name AS  category_name,
   prod_cat.category_id AS  category_id,
-  "" AS  subcategory_id,
-  "" AS  subcategory_name,
+  prod_cat.subcategory_id AS  subcategory_id,
+  prod_cat.subcategory_name AS  subcategory_name,
 
   -- Dados do pedido
   SAFE_CAST(JSON_VALUE(json_item, "$.quantidade") AS INT64) AS quantity,
   SAFE_CAST(JSON_VALUE(json_item, "$.valor") AS FLOAT64) AS price_unit,
   SAFE_CAST(JSON_VALUE(json_item, "$.desconto_total") AS FLOAT64) AS price_discount,
   (
-     SAFE_CAST(JSON_VALUE(json_item, "$.valor") AS FLOAT64) *
+     SAFE_CAST(JSON_VALUE(json_item, "$.quantidade") AS FLOAT64) *
      SAFE_CAST(JSON_VALUE(json_item, "$.valor") AS FLOAT64) -
      SAFE_CAST(JSON_VALUE(json_item, "$.desconto_total") AS FLOAT64)
   ) AS price_total
 
 FROM
   -- tabela de pedidos 0 items abertos
-  ${ref("raw_b4c_Orders")} O,
+  ${ref("stg_b4c_orders_all")} O,
   UNNEST(JSON_EXTRACT_ARRAY(entregas, '$')) AS delivery,
     UNNEST(JSON_EXTRACT_ARRAY(delivery, '$.itens')) AS json_item
   -- tabela de produos

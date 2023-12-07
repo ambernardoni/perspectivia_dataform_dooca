@@ -1,0 +1,48 @@
+config {
+    type: "view",
+    schema: "standard",
+    description: "Histórico + atuais",
+    tags: ['b4c'],
+    disabled: false
+}
+
+  (
+  SELECT
+    _airbyte_extracted_at,
+    canal,
+    codigo,
+    CAST (status AS STRING) AS status,
+    entregas,
+    subtotal,
+    descontos,
+    acrescimos,
+    pagamentos,
+    valor_frete,
+    data_criacao,
+    total_pedido,
+    codigo_vendedor,
+    dados_da_entrega,
+    dados_do_cliente,
+    descricao_status
+  FROM
+    ${ref("raw_b4c_Orders1d")} )
+UNION ALL (
+  SELECT
+    _airbyte_extracted_at,
+    canal,
+    codigo,
+    CAST (status AS STRING) AS status,
+    entregas,
+    subtotal,
+    descontos,
+    acrescimos,
+    pagamentos,
+    valor_frete,
+    data_criacao,
+    total_pedido,
+    codigo_vendedor,
+    dados_da_entrega,
+    dados_do_cliente,
+    descricao_status
+  FROM
+    ${ref("raw_b4c_Orders_hist")} )

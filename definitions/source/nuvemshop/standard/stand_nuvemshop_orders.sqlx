@@ -1,0 +1,65 @@
+config {
+    type: "view",
+    schema: "standard",
+    description: "Cleaned up version of orders",
+    tags: ['nuvemshop'],
+    disabled: false
+}
+
+-- Este script organiza todas as informações de pedidos. 
+-- É ele que converte as informações no formato da plataforma para o formato da PERSPECTIVIA
+-- A maior parte da lógica de transformação está aqui.
+SELECT
+  _airbyte_extracted_at,
+  SAFE_CAST(id AS STRING) AS order_id,
+  SAFE_CAST(created_at AS TIMESTAMP) AS creation_date,
+  SAFE_CAST(updated_at AS TIMESTAMP) AS update_date,
+
+  "order" AS order_type,          -- Dooca guarda devolução de alguma forma?
+  "" as order_type_detail,
+  ${nuvemshop.status_type_group("status")} AS status_type,
+  status AS status_type_detail,     
+  storefront AS point_of_sale, -- Dooca não guarda outros parâmteros aqui?
+
+  -------------  value ---------------  
+  STRUCT 
+  (
+    SAFE_CAST(total AS FLOAT64) AS total,
+    0 AS items,    --#############
+    SAFE_CAST(discount AS FLOAT64) AS discounts,
+    SAFE_CAST(shipping_cost_customer AS FLOAT64) AS shipping,
+    0 AS tax
+  ) 
+  AS value,
+ -------------  payment -------------  
+  STRUCT 
+  (
+    JSON_VALUE (payment_details ,"$.method") AS method,
+    JSON_VALUE (payment_details ,"$.credit_card_company") AS method_detail
+  )
+  AS payment,
+  -------------  address -------------  
+  STRUCT 
+  (
+    billing_zipcode AS shipping_zipcode,
+    JSON_VALUE(shipping_address, '$.city') AS shipping_city,
+    JSON_VALUE(shipping_address, '$.province') AS shipping_state,
+    JSON_VALUE(shipping_address, '$.country')AS shipping_country
+  ) 
+  AS address,
+
+  -------------  customer ------------  
+  STRUCT 
+  (
+    JSON_VALUE(customer, '$.id')  AS customer_id,
+    contact_name AS name,
+    contact_identification AS doc_number,
+    contact_email AS email,
+    contact_phone AS phone
+  ) 
+  AS customer,
+
+FROM
+  ${ref("stg_nuvemshop_orders_all")} O
+
+

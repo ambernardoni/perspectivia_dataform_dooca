@@ -5,62 +5,38 @@ config {
     tags: ['b4c']
 }
 
--- Este script organiza todas as informações de pedidos. 
--- É ele que converte as informações no formato da plataforma para o formato da PERSPECTIVIA
--- A maior parte da lógica de transformação está aqui.
-
+  -- Este script organiza todas as informações de pedidos.
+  -- É ele que converte as informações no formato da plataforma para o formato da PERSPECTIVIA
+  -- A maior parte da lógica de transformação está aqui.
 SELECT
+  _airbyte_extracted_at,
   SAFE_CAST(codigo AS STRING) AS order_id,
   SAFE_CAST(data_criacao AS TIMESTAMP) AS creation_date,
-  SAFE_CAST(data_criacao AS TIMESTAMP) AS update_date,  -- ### VOLTAR E ARRUMAR
-
-  "order" AS order_type,           -- ### VOLTAR E ARRUMAR
-  "order" as order_type_detail,    -- ### VOLTAR E ARRUMAR
+  SAFE_CAST(data_criacao AS TIMESTAMP) AS update_date,   -- ### VOLTAR E ARRUMAR
+  "order" AS order_type,   -- ### VOLTAR E ARRUMAR
+  "order" AS order_type_detail,   -- ### VOLTAR E ARRUMAR
   ${b4c.status_type_group("descricao_status")} AS status_type,
   descricao_status AS status_type_detail,
-
-  canal AS point_of_sale, -- Normalizar aqui?
-
-  -------------  value ---------------  
-  STRUCT 
-  (
-    SAFE_CAST(total_pedido AS FLOAT64) AS total,
-    SAFE_CAST(subtotal AS FLOAT64) AS items,    
-    SAFE_CAST(descontos AS FLOAT64) AS discounts,
-    SAFE_CAST(valor_frete AS FLOAT64) AS shipping,
-    0 AS tax
-  ) 
-  AS value,
-
-  -------------  payment -------------  
-  STRUCT 
-  (
-    JSON_VALUE(pagamentos[0], '$.nome_meio_pagamento') AS method,
-    JSON_VALUE(pagamentos[0], '$.nome_forma_pagamento')  AS method_detail  
-  )
-  AS payment,
-
-
-  -------------  address -------------  
-  STRUCT 
-  (
-    JSON_VALUE(dados_da_entrega, '$.cep')  AS shipping_zipcode,
-    JSON_VALUE(dados_da_entrega, '$.cidade') AS shipping_city,
-    JSON_VALUE(dados_da_entrega, '$.uf') AS shipping_state,
-    "Brasil" AS shipping_country
-  ) 
-  AS address,
-
-  -------------  customer ------------  
-  STRUCT 
-  (
-    JSON_VALUE(dados_do_cliente, '$.codigo_cliente')  AS customer_id,
-    JSON_VALUE(dados_do_cliente, '$.nome')  AS name,
-    JSON_VALUE(dados_do_cliente, '$.cpf_cnpj')  AS doc_number,
-    JSON_VALUE(dados_do_cliente, '$.email') AS email,
-    JSON_VALUE(dados_do_cliente, '$.fone')  AS phone
-  ) 
-  AS customer
-
+  canal AS point_of_sale,   -- Normalizar aqui?
+  -------------  value ---------------
+  STRUCT ( SAFE_CAST(total_pedido AS FLOAT64) AS total,
+  SAFE_CAST(subtotal AS FLOAT64) AS items,
+  SAFE_CAST(descontos AS FLOAT64) AS discounts,
+  SAFE_CAST(valor_frete AS FLOAT64) AS shipping,
+  0 AS tax ) AS value,
+  -------------  payment -------------
+  STRUCT ( JSON_VALUE(pagamentos[0], '$.nome_meio_pagamento') AS method,
+  JSON_VALUE(pagamentos[0], '$.nome_forma_pagamento') AS method_detail ) AS payment,
+  -------------  address -------------
+  STRUCT ( JSON_VALUE(dados_da_entrega, '$.cep') AS shipping_zipcode,
+  JSON_VALUE(dados_da_entrega, '$.cidade') AS shipping_city,
+  JSON_VALUE(dados_da_entrega, '$.uf') AS shipping_state,
+  "Brasil" AS shipping_country ) AS address,
+  -------------  customer ------------
+  STRUCT ( JSON_VALUE(dados_do_cliente, '$.codigo_cliente') AS customer_id,
+  JSON_VALUE(dados_do_cliente, '$.nome') AS name,
+  JSON_VALUE(dados_do_cliente, '$.cpf_cnpj') AS doc_number,
+  JSON_VALUE(dados_do_cliente, '$.email') AS email,
+  JSON_VALUE(dados_do_cliente, '$.fone') AS phone ) AS customer
 FROM
-  ${ref("raw_b4c_Orders")} O
+  ${ref("stg_b4c_orders_all")} O

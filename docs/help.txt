@@ -39,7 +39,22 @@ EXECUTION: Tags
   1-General
   B4c
 
+==========================================================
+=   Nuvemshop
+==========================================================
+Configurações para desenvolver Nuvemshop: 
 
+No dataform.json:
 
+  "vars": {
+    "rawDataset" : "raw_tskyhill",
+    "ecommPlatName" : "nuvemshop"
+  }
+
+TAG nos scripts: nuvemshop
+
+EXECUTION: Tags
+  1-General
+  nuvemshop
 
 

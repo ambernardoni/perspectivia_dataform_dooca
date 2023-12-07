@@ -7,13 +7,17 @@ config {
 
 SELECT 
   prod.nome as product_name,
+  prod.codigo_categoria,
+  cat.codigo,
   CAST (prod.codigo AS STRING) AS  product_id,
   CAST (prod.sku AS STRING) AS  product_sku,
-  CAST (cat.codigo AS STRING) AS  category_id,
-  cat.descricao AS  category_name
+  CAST (cat.id_level0 AS STRING) AS  category_id,
+  cat.name_level0 AS  category_name,
+  CAST (cat.id_level1 AS STRING) AS subcategory_id,
+  cat.name_level1 AS subcategory_name
 FROM
   ${ref("raw_b4c_Products")} prod
 LEFT JOIN
-  ${ref("raw_b4c_Categories")} cat
+  ${ref("stg_b4c_category_tree")} cat
 ON
   prod.codigo_categoria = cat.codigo
