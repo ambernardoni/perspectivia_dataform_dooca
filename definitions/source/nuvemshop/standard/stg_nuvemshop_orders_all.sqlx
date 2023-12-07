@@ -1,0 +1,17 @@
+config {
+    type: "view",
+    schema: "standard",
+    description: "Cleaned up version of orders",
+    tags: ['nuvemshop'],
+    disabled: false
+}
+
+SELECT
+  *
+FROM
+  ${ref("raw_nuvemshop_Orders")} O
+UNION ALL
+SELECT
+  *
+FROM
+  ${ref("raw_nuvemshop_Orders_hist")} O

@@ -11,7 +11,7 @@ config {
 -- A maior parte da lógica de transformação está aqui.
 
 SELECT
-
+  _airbyte_extracted_at,
   SAFE_CAST(id AS STRING) AS order_id,
   SAFE_CAST(created_at AS TIMESTAMP) AS creation_date,
   SAFE_CAST(updated_at AS TIMESTAMP) AS update_date,

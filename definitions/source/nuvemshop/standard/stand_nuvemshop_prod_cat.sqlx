@@ -1,0 +1,14 @@
+config {
+    type: "view",
+    schema: "standard",
+    description: "Tabela contendo a lista de produtos da loja e suas categorias",
+    tags: ['nuvemshop']
+}
+
+SELECT
+  CAST (id AS STRING) AS product_id,
+  JSON_VALUE (name, "$.pt") AS product_name,
+  CAST (JSON_VALUE (categories[0], "$.id") AS STRING) AS category_id,
+  JSON_VALUE (categories[0], "$.name.pt") AS category_name,
+FROM
+  ${ref("raw_nuvemshop_Products")} prod
