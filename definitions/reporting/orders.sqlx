@@ -4,9 +4,6 @@ config {
     description: "Pedidos realizados na loja",
     tags: ['1-general'],
 
-    type: "incremental",
-    uniqueKey: ["order_id"],
-
     bigquery: {
       partitionBy: "DATE(creation_date)"
     },
@@ -23,20 +20,25 @@ config {
     }
 }
 
------------------- A PARTIR DE ONDE SERÁ A CARGA INCREMENTAL ---------------
-pre_operations {
-  DECLARE airbyte_extracted_at_checkpoint DEFAULT (
-    ${when(incremental(),
-    `SELECT max(_airbyte_extracted_at) FROM ${self()}`,
-    `SELECT timestamp("2020-01-01")`)}
-  )
-}
+-- Tira os pedidos duplicados. Em uma futura versão em que faça a carga incrementa
+-- deveríamos usar os recursos do próprio Dataform na declaração da carga incremental
+-- 
+WITH
+  order_deduplicated AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY _airbyte_extracted_at DESC) AS rn
+  FROM
+    ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_orders")}
+)
+
+
 
 ----------------------- MONTA A TABELA DE PEDIDOS ----------------------
 SELECT
   *,
 
--------------------------- Itens do pedido -----------------------
+-------------------------- Itens do pedido 
 -- Faz um join com prod_cat_order, conta as quantidades e cria um array com os pedidos
   (
     SELECT COUNT(*)
@@ -58,7 +60,7 @@ SELECT
  ) AS items,
 
 
--------------  customer_stats -------------  
+---------------------  customer_stats   
   STRUCT 
   (
     MIN (creation_date) OVER (PARTITION BY customer.customer_id) AS first_order_date,
@@ -72,8 +74,9 @@ SELECT
   AS customer_stats
 
 FROM
-  ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_orders")} O
-WHERE 
- _airbyte_extracted_at > airbyte_extracted_at_checkpoint
+  order_deduplicated O
+--  ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_orders")} O
 
+WHERE
+  rn = 1 -- tira os registros duplicados
 

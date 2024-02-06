@@ -1,3 +1,9 @@
+--------------------------------------------------------------------------------
+ -- STAGE -  Processamento interno dos dados da B4C
+ -- materializa uma tabela de categorias e subcategorias (com dois níveis).
+ -- DOWNSTREAM: complementar os dados de produtos vendidos 
+--------------------------------------------------------------------------------
+
 config {
     type: "table",
     schema: "standard",

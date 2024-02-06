@@ -1,13 +1,16 @@
+------------------------------------------------------------------------------------------------
+ -- Extrai as informações de produtos comprados,e já prepara no formato certo  
+ -- para fazer parte dos pedidos depois como um ARRAY de STRUCT da tabela Orders
+ -- o que tiver de informação aqui será inserida como array de itens dentro da tabela "Orders
+ -- DONWSTREAM: Essa view será usada pelo processamento geral (independente de plataforma]
+------------------------------------------------------------------------------------------------
+
 config {
     type: "view",
     schema: "standard",
     description: "Cleaned up version of orders",
     tags: ['b4c']
 }
-
--- Este script extrai as informações de produtos comprados, 
--- e já prepara no formato certo para fazer parte dos pedidos depois como um ARRAY de STRUCT da tabela Orders
--- o que tiver de informação aqui será inserida o array de itens dentro da tabela "Orders"
 
 SELECT
   O.codigo AS order_id,
@@ -33,6 +36,7 @@ SELECT
 
 FROM
   -- tabela de pedidos 0 items abertos
+-- ${ref("raw_b4c_Orders_hist")} O,
   ${ref("stg_b4c_orders_all")} O,
   UNNEST(JSON_EXTRACT_ARRAY(entregas, '$')) AS delivery,
     UNNEST(JSON_EXTRACT_ARRAY(delivery, '$.itens')) AS json_item

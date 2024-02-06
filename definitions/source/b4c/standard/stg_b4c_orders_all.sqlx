@@ -1,3 +1,8 @@
+--------------------------------------------------------------------------------------------------
+  -- STAGE - Junta a tabela histórica de pedidos com a tabela atualizada diariamente 
+  -- Isso é feito pela estratégia de ingestão dos dados ser separada em histórico e novos
+--------------------------------------------------------------------------------------------------
+
 config {
     type: "view",
     schema: "standard",
