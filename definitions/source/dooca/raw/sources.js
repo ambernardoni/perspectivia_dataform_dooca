@@ -1,3 +1,7 @@
+/* -------------------------------------------------------------------
+NESSE ARQUIVO ESTÃO DECLARADAS TODAS AS ORIGENS DA PLATAFORMA DOOCA
+---------------------------------------------------------------------*/
+
 /*
 declare({
   schema: dataform.projectConfig.vars.rawDataset,

@@ -1,3 +1,8 @@
+/* -------------------------------------------------------------------
+NESSE ARQUIVO ESTÃO DECLARADAS TODAS AS ORIGENS DA PLATAFORMA NUVEMSHOP
+---------------------------------------------------------------------*/
+
+
 declare({
   schema: dataform.projectConfig.vars.rawDataset,
   name: "raw_nuvemshop_Categories",

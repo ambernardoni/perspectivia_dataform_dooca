@@ -1,3 +1,9 @@
+--------------------------------------------------------------------------------------------------
+  -- Converte as informações no formato da plataforma para o formato da PERSPECTIVIA
+  -- A maior parte da lógica de transformação está aqui.
+  -- DONWSTREAM: Essa view será usada pelo processamento geral (independente de plataforma]
+--------------------------------------------------------------------------------------------------
+
 config {
     type: "view",
     schema: "standard",
@@ -5,9 +11,6 @@ config {
     tags: ['b4c']
 }
 
-  -- Este script organiza todas as informações de pedidos.
-  -- É ele que converte as informações no formato da plataforma para o formato da PERSPECTIVIA
-  -- A maior parte da lógica de transformação está aqui.
 SELECT
   _airbyte_extracted_at,
   SAFE_CAST(codigo AS STRING) AS order_id,
@@ -40,3 +43,6 @@ SELECT
   JSON_VALUE(dados_do_cliente, '$.fone') AS phone ) AS customer
 FROM
   ${ref("stg_b4c_orders_all")} O
+--  ${ref("raw_b4c_Orders_hist")} O
+
+
