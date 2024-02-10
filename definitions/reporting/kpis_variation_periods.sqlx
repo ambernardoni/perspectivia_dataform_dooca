@@ -1,0 +1,42 @@
+--------------------------------------------------------------------------------------------------
+  -- Os KPIs principais são comparados com períodos anterioes
+  -- Essa tabela define quais serão esses períodos
+  -- DOWNSTREAM: essa tabela é usada para computar a soma e variação dos indicadores nesses períodos
+--------------------------------------------------------------------------------------------------
+
+config {
+    type: "table",
+    schema: "reporting",
+    description: "Períodos de análise das variações dos KPIs",
+    tags: ['1-general']
+}
+
+SELECT
+ '7 dias vs 7 anteriores' AS period_name,
+  1 AS visual_period_order, -- a ordem em que vai aparecer na tela
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) as current_period_end,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 7 DAY) as current_period_start,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 8 DAY) as previous_period_end,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 14 DAY) as previous_period_start,
+UNION ALL SELECT
+ '14 dias vs 14 anteriores' AS period_name,
+  2 AS visual_period_order,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) as current_period_start,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 14 DAY) as current_period_end,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 15 DAY) as previous_period_start,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 28 DAY) as previous_period_end,
+UNION ALL SELECT
+ '28 dias vs 28 anteriores' AS period_name,
+  3 AS visual_period_order,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) as current_period_start,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 28 DAY) as current_period_end,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 29 DAY) as previous_period_start,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 56 DAY) as previous_period_end,
+UNION ALL SELECT
+ '150 dias vs 150 anteriores' AS period_name,
+  4 AS visual_period_order,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) as current_period_start,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 150 DAY) as current_period_end,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 150 DAY) as previous_period_start,
+  DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 300 DAY) as previous_period_end
+  

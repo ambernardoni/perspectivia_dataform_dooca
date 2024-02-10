@@ -1,0 +1,33 @@
+--------------------------------------------------------------------------------------------------
+-- Totaliza diversos KPIs da operação de e-commerce, dia a dia
+-- Notas: Usamos Float aqui (mesmo quando é inteiro) para facilitar o processamento downstream 
+--        (que totaliza e calcula variações. Usas UNPIVOT, que demanta que seja tudo do mesmo tipo)
+-- Não Usamos struct para agrupar campos parfecidos, pelo mesmo motivo 
+--------------------------------------------------------------------------------------------------
+
+config {
+    type: "table",
+    schema: "reporting",
+    description: "Principais KPIs do ecommerce, dia a dia",
+    tags: ['1-general']
+}
+
+SELECT
+  DATE(creation_date) as date_kpi,
+  EXTRACT(DAYOFWEEK FROM creation_date) as weekday,
+  CAST (count (*) AS FLOAT64) as orders,
+  CAST (count (*) * 100 AS FLOAT64) as sessions,   -- Arrumar aqui depois
+  sum (quantity_variety_items) as quantity_variety_items,
+  sum (quantity_items) as quantity_items,
+  sum (value.total) as revenue_total,
+  sum (value.items) as revenue_items,
+  sum (value.discounts) as revenue_discounts,
+  sum (value.shipping) as revenue_shipping
+FROM
+  ${ref("orders")}
+--WHERE
+--  DATE(creation_date) > "2023-12-01"
+GROUP BY
+  date_kpi, weekday
+  
+
