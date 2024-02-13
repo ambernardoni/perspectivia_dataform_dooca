@@ -1,5 +1,6 @@
 --------------------------------------------------------------------------------------------------
   -- Calcula as variações dos KPIs em determinados períodos
+  -- Variação = (current_value - previous_value) / previous_value
 --------------------------------------------------------------------------------------------------
 config {
     type: "table",
@@ -8,44 +9,11 @@ config {
     tags: ['1-general']
 }
 
- ------------------------------------------------------------------------------------ 
-  -- Para facilitar o processamento, arruma os KPIs no foramto 
-  -- date_kpi | kpi | valor 
-WITH
-  kpis_pivot AS (
-  SELECT
-    date_kpi,
-    kpi,
-    value
-  FROM
-    ${ref("kpis")} UNPIVOT (value FOR kpi IN ( 
-        revenue_total AS 'revenue_total',
-        orders AS "orders",
-        sessions AS 'sessions'
-
-    )) ) 
-        
-------------------------------------------------------------------------------------
 SELECT
-  d.kpi,
-  p.period_name,
-  p.visual_period_order,
-  SUM(CASE WHEN d.date_kpi BETWEEN p.current_period_start AND p.current_period_end THEN d.value ELSE 0 END) AS current_period_sum,
-  SUM(CASE WHEN d.date_kpi BETWEEN p.previous_period_start AND p.previous_period_end THEN d.value ELSE 0 END) AS previous_period_sum,
-  CASE
-    WHEN SUM(CASE WHEN d.date_kpi BETWEEN p.previous_period_start AND p.previous_period_end THEN d.value ELSE 0 END) = 0 THEN NULL
-    ELSE (SUM(CASE WHEN d.date_kpi BETWEEN p.current_period_start AND p.current_period_end THEN d.value ELSE 0 END) - 
-          SUM(CASE WHEN d.date_kpi BETWEEN p.previous_period_start AND p.previous_period_end THEN d.value ELSE 0 END)) / 
-          SUM(CASE WHEN d.date_kpi BETWEEN p.previous_period_start AND p.previous_period_end THEN d.value ELSE 0 END)
+  *,
+  CASE 
+    WHEN previous_period_value = 0 THEN NULL 
+    ELSE (current_period_value - previous_period_value) / previous_period_value 
   END AS percent_difference
 FROM
-  kpis_pivot d
-JOIN
-  ${ref("kpis_variation_periods")} p
-ON
-  d.date_kpi BETWEEN p.current_period_start AND p.current_period_end
-  OR d.date_kpi BETWEEN p.previous_period_start AND p.previous_period_end
-GROUP BY
-  p.period_name,
-  p.visual_period_order,
-  d.kpi
+ ${ref('stg_kpis_variation_step2_composedmetrics')}

@@ -1,0 +1,49 @@
+--------------------------------------------------------------------------------------------------
+  -- Calcula as variações dos KPIs PUROS em determinados períodos
+  -- Os KPIs já devem estar na tabela "kpis" e os que serão processados
+  -- para calcular variações são escolhidos abaixo 
+--------------------------------------------------------------------------------------------------
+config {
+    type: "view",
+    schema: "staging",
+    description: "calcula os KPIs puros (que não são compostos por outros)",
+    tags: ['1-general']
+}
+
+ ------------------------------------------------------------------------------------ 
+  -- Para facilitar o processamento, arruma os KPIs no foramto 
+  -- date_kpi | kpi | valor 
+WITH
+  kpis_pivot AS (
+  SELECT
+    date_kpi,
+    kpi,
+    value
+  FROM
+    -- AQUI ESTÃO OS KPIS QUE SERÃO PROCESSADOS
+    ${ref("kpis")} UNPIVOT (value FOR kpi IN ( 
+        revenue_total AS 'revenue_total',
+        orders AS "orders",
+        sessions AS 'sessions',
+        quantity_variety_items  AS 'quantity_variety_items'
+
+    )) ) 
+        
+------------------------------------------------------------------------------------
+SELECT
+  d.kpi,
+  p.period_name,
+  p.visual_period_order,
+  SUM(CASE WHEN d.date_kpi BETWEEN p.current_period_start AND p.current_period_end THEN d.value ELSE 0 END) AS current_period_value,
+  SUM(CASE WHEN d.date_kpi BETWEEN p.previous_period_start AND p.previous_period_end THEN d.value ELSE 0 END) AS previous_period_value,
+FROM
+  kpis_pivot d
+JOIN
+  ${ref("kpis_variation_periods")} p
+ON
+  d.date_kpi BETWEEN p.current_period_start AND p.current_period_end
+  OR d.date_kpi BETWEEN p.previous_period_start AND p.previous_period_end
+GROUP BY
+  p.period_name,
+  p.visual_period_order,
+  d.kpi

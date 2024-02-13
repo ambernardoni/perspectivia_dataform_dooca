@@ -1,8 +1,9 @@
 --------------------------------------------------------------------------------------------------
 -- Totaliza diversos KPIs da operação de e-commerce, dia a dia
--- Notas: Usamos Float aqui (mesmo quando é inteiro) para facilitar o processamento downstream 
---        (que totaliza e calcula variações. Usas UNPIVOT, que demanta que seja tudo do mesmo tipo)
--- Não Usamos struct para agrupar campos parfecidos, pelo mesmo motivo 
+-- Notas: Para facilitar o processamento downstream:
+-- (que totaliza e calcula variações. Usas UNPIVOT, que demanta que seja tudo do mesmo tipo)
+--     Usamos Float aqui (mesmo quando é inteiro)  
+--     Não Usamos struct para agrupar campos parfecidos
 --------------------------------------------------------------------------------------------------
 
 config {
@@ -13,20 +14,19 @@ config {
 }
 
 SELECT
-  DATE(creation_date) as date_kpi,
-  EXTRACT(DAYOFWEEK FROM creation_date) as weekday,
-  CAST (count (*) AS FLOAT64) as orders,
-  CAST (count (*) * 100 AS FLOAT64) as sessions,   -- Arrumar aqui depois
-  sum (quantity_variety_items) as quantity_variety_items,
-  sum (quantity_items) as quantity_items,
-  sum (value.total) as revenue_total,
-  sum (value.items) as revenue_items,
-  sum (value.discounts) as revenue_discounts,
-  sum (value.shipping) as revenue_shipping
+  DATE(creation_date) AS date_kpi,
+  EXTRACT(DAYOFWEEK FROM creation_date) AS weekday,
+  CAST (COUNT (*) AS FLOAT64) AS orders,
+  CAST (COUNT (*) * 100 AS FLOAT64) AS sessions,   -- Arrumar aqui depois
+  CAST (SUM (quantity_variety_items) AS FLOAT64) AS quantity_variety_items,
+  CAST (SUM (quantity_items) AS FLOAT64) AS quantity_items,
+  SUM (value.total) AS revenue_total,
+  SUM (value.items) AS revenue_items,
+  SUM (value.discounts) AS revenue_discounts,
+  SUM (value.shipping) AS revenue_shipping
 FROM
   ${ref("orders")}
---WHERE
---  DATE(creation_date) > "2023-12-01"
+--WHERE DATE(creation_date) > "2023-12-01"   -- Só para otimizar os testes
 GROUP BY
   date_kpi, weekday
   
