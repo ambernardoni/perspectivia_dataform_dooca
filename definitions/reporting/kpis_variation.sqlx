@@ -1,0 +1,19 @@
+--------------------------------------------------------------------------------------------------
+  -- Calcula as variações dos KPIs em determinados períodos
+  -- Variação = (current_value - previous_value) / previous_value
+--------------------------------------------------------------------------------------------------
+config {
+    type: "table",
+    schema: "reporting",
+    description: "Variação dos KPIs do e-commerce, em períodos definidos",
+    tags: ['1-general']
+}
+
+SELECT
+  *,
+  CASE 
+    WHEN previous_period_value = 0 THEN NULL 
+    ELSE (current_period_value - previous_period_value) / previous_period_value 
+  END AS percent_difference
+FROM
+ ${ref('stg_kpis_variation_step2_composedmetrics')}

@@ -1,0 +1,57 @@
+--------------------------------------------------------------------------------------------------
+  -- Adiciona as variações dos KPIs COMPOSTOS em determinados períodos
+  -- KPIs COMPOSTOS são relações entre KPIs PUROS
+  -- (as métricas deverão ter sido processada pelo passo anterior (pure metrics))
+--------------------------------------------------------------------------------------------------
+config {
+    type: "view",
+    schema: "staging",
+    description: "calcula os KPIs puros (que não são compostos por outros)",
+    tags: ['1-general']
+}
+
+-------------------------------------------
+-- Métricas anteriores (puras)
+SELECT
+  *
+FROM
+  ${ref('stg_kpis_variation_step1_puremetrics')}
+
+-------------------------------------------
+-- + TICKET MÉDIO
+UNION ALL SELECT
+  'average_order_value' AS kpi,
+  period_name,
+  visual_period_order,
+  IFNULL(SUM(CASE WHEN kpi = 'revenue_total' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN current_period_value END), 0), 0) AS current_period_value,
+  IFNULL(SUM(CASE WHEN kpi = 'revenue_total' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN previous_period_value END), 0), 0) AS previous_period_value,
+FROM
+  ${ref('stg_kpis_variation_step1_puremetrics')}
+GROUP BY
+  period_name, visual_period_order
+ 
+-------------------------------------------
+-- + CONVERSÃO
+ UNION ALL SELECT
+  'conversion' AS kpi,
+  period_name,
+  visual_period_order,
+  IFNULL(SUM(CASE WHEN kpi = 'orders' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'sessions' THEN current_period_value END), 0), 0) AS current_period_value,
+  IFNULL(SUM(CASE WHEN kpi = 'orders' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'sessions' THEN previous_period_value END), 0), 0) AS previous_period_value,
+FROM
+  ${ref('stg_kpis_variation_step1_puremetrics')}
+GROUP BY
+  period_name, visual_period_order
+
+-------------------------------------------
+-- + PRODUTOS POR PEDIDO
+ UNION ALL SELECT
+  'products_variety_per_order' AS kpi,
+  period_name,
+  visual_period_order,
+  IFNULL(SUM(CASE WHEN kpi = 'quantity_variety_items' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN current_period_value END), 0), 0) AS current_period_value,
+  IFNULL(SUM(CASE WHEN kpi = 'quantity_variety_items' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN previous_period_value END), 0), 0) AS previous_period_value,
+FROM
+  ${ref('stg_kpis_variation_step1_puremetrics')}
+GROUP BY
+  period_name, visual_period_order
