@@ -13,6 +13,10 @@ config {
     tags: ['1-general']
 }
 
+---------------------------------------------------------------------------------------------------
+-- KPIs da tabela de pedidos (orders) da plataforma de e-commerce
+WITH
+  orders_kpis AS (
 SELECT
   DATE(creation_date) AS date_kpi,
   EXTRACT(DAYOFWEEK FROM creation_date) AS weekday,
@@ -26,8 +30,38 @@ SELECT
   SUM (value.shipping) AS revenue_shipping
 FROM
   ${ref("orders")}
---WHERE DATE(creation_date) > "2023-12-01"   -- Só para otimizar os testes
 GROUP BY
   date_kpi, weekday
-  
+  ),
 
+---------------------------------------------------------------------------------------------------
+-- KPIs da tabela de metas do produto Perspectivia para aquele tenant 
+  goals_kpis AS (
+SELECT 
+  date_creation as date_kpi, 
+  meta_faturamento as goal_revenue
+FROM 
+  ${ref("pp_goals")}
+)
+
+---------------------------------------------------------------------------------------------------
+-- JUNTA OS KPIS
+
+SELECT
+  COALESCE(o.date_kpi, g.date_kpi) AS date_kpi,
+  o.weekday,
+  o.orders,
+  o.sessions,
+  o.quantity_variety_items,
+  o.quantity_items,
+  o.revenue_total,
+  o.revenue_items,
+  o.revenue_discounts,
+  o.revenue_shipping,
+  g.goal_revenue
+FROM
+  orders_kpis o
+FULL OUTER JOIN
+  goals_kpis g
+ON
+  o.date_kpi = g.date_kpi
