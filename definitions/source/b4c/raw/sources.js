@@ -12,6 +12,13 @@ declare({
 
 declare({
   schema: dataform.projectConfig.vars.rawDataset,
+  name: "pp_goals",
+  description: "Tabela de metas do produto Perspectivia para esse tenant"
+});
+
+
+declare({
+  schema: dataform.projectConfig.vars.rawDataset,
   name: "raw_b4c_Categories",
   description: "Tabela de categorias da plataforma B4C"
 });

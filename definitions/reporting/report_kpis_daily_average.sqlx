@@ -1,0 +1,29 @@
+config {
+    type: "table",
+    schema: "reporting",
+    description: "Média dos KPIs dos últimos dias",
+    tags: ['1-general']
+}
+
+WITH filtered_data AS (
+  SELECT
+    *
+  FROM
+    ${ref('kpis')}
+  WHERE
+    date_kpi > DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 70 DAY) AND
+    date_kpi < (CURRENT_DATE('America/Sao_Paulo'))
+) 
+
+SELECT
+  weekday,
+  AVG (orders) AS orders_avg,
+  AVG (sessions) AS sessions_avg,
+  AVG (quantity_variety_items) AS quantity_variety_items_avg,
+  AVG (revenue_total) AS revenue_total_avg
+FROM
+  filtered_data 
+GROUP BY
+  weekday
+HAVING
+  weekday IS NOT NULL

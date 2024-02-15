@@ -1,0 +1,27 @@
+config {
+    type: "view",
+    schema: "reporting",
+    description: "Dados para gerar o reports de metas vs real",
+    tags: ['1-general']
+}
+
+WITH MockTable AS (
+  SELECT 0 AS ord,'year' AS period, 'Expectativa' AS type_goal, ' Realizado' AS metric, revenue_goal_ytd AS value_goal FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+  SELECT 10,'year', 'Expectativa', 'Falta para meta', diff_goal_ytd_total FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+
+  SELECT 0,'year', 'Real', ' Realizado', revenue_ytd FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+  SELECT 10,'year', 'Real', 'Falta para meta', diff_real_ytd_total FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+  SELECT 100,'year', 'Real', 'Acima da meta', supearavit_revenue_ytd_total FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+
+  SELECT 0,'month', 'Expectativa', ' Realizado', revenue_goal_mtd FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+  SELECT 10,'month', 'Expectativa', 'Falta para meta', diff_goal_mtd_total FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+  
+  SELECT 0,'month', 'Real', ' Realizado', revenue_mtd FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+  SELECT 10,'month', 'Real', 'Falta para meta', diff_real_mtd_total FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+  SELECT 100,'month', 'Real', 'Acima da meta', supearavit_revenue_mtd_total FROM ${ref("report_kpis_realvsgoal_table")} 
+)
+
+
+SELECT 
+* FROM  MockTable
+--${ref("report_kpis_realvsgoal_table")}

@@ -13,11 +13,16 @@ config {
     tags: ['1-general']
 }
 
+---------------------------------------------------------------------------------------------------
+-- KPIs da tabela de pedidos (orders) da plataforma de e-commerce
+WITH
+  orders_kpis AS (
 SELECT
   DATE(creation_date) AS date_kpi,
   EXTRACT(DAYOFWEEK FROM creation_date) AS weekday,
   CAST (COUNT (*) AS FLOAT64) AS orders,
-  CAST (COUNT (*) * 100 AS FLOAT64) AS sessions,   -- Arrumar aqui depois
+  CAST (COUNTIF(status_type = 'Cancelado') AS FLOAT64) AS orders_cancelled,
+  CAST (COUNT (*) * (30 + 130 *  RAND())  AS FLOAT64) AS sessions,   -- Arrumar aqui depois
   CAST (SUM (quantity_variety_items) AS FLOAT64) AS quantity_variety_items,
   CAST (SUM (quantity_items) AS FLOAT64) AS quantity_items,
   SUM (value.total) AS revenue_total,
@@ -26,8 +31,39 @@ SELECT
   SUM (value.shipping) AS revenue_shipping
 FROM
   ${ref("orders")}
---WHERE DATE(creation_date) > "2023-12-01"   -- Só para otimizar os testes
 GROUP BY
   date_kpi, weekday
-  
+  ),
 
+---------------------------------------------------------------------------------------------------
+-- KPIs da tabela de metas do produto Perspectivia para aquele tenant 
+  goals_kpis AS (
+SELECT 
+  date_creation as date_kpi, 
+  meta_faturamento as goal_revenue
+FROM 
+  ${ref("pp_goals")}
+)
+
+---------------------------------------------------------------------------------------------------
+-- JUNTA OS KPIS
+
+SELECT
+  COALESCE(o.date_kpi, g.date_kpi) AS date_kpi,
+  o.weekday,
+  o.orders,
+  o.orders_cancelled,
+  o.sessions,
+  o.quantity_variety_items,
+  o.quantity_items,
+  o.revenue_total,
+  o.revenue_items,
+  o.revenue_discounts,
+  o.revenue_shipping,
+  g.goal_revenue
+FROM
+  orders_kpis o
+FULL OUTER JOIN
+  goals_kpis g
+ON
+  o.date_kpi = g.date_kpi

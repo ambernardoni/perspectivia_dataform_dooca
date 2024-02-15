@@ -1,0 +1,104 @@
+config {
+    type: "table",
+    schema: "reporting",
+    description: "Dados para gerar o reports de metas vs real",
+    columns: {
+      revenue_ytd: "Realizado do início do ANO até ontem",
+      revenue_mtd: "Realizado do início do MÊS até ontem",
+      revenue_goal_ytd: "Meta do início do ANO até ontem",
+      revenue_goal_mtd: "Meta do início do MÊS até ontem",
+      revenue_goal_current_year: "Meta do ANO",
+      revenue_goal_current_month: "Meta do MÊS",
+      revenue_goal_ytd_percent: "revenue_ytd / revenue_goal_ytd",
+      revenue_goal_mtd_percent: "revenue_mtd / revenue_goal_mtd",
+      revenue_goal_current_year_percent: "revenue_ytd / revenue_goal_current_year",
+      revenue_goal_current_month_percent: "revenue_mtd / revenue_goal_current_month",
+      diff_goal_ytd_total: "revenue_goal_current_year - revenue_goal_ytd",
+      diff_goal_mtd_total: "revenue_goal_current_month - revenue_goal",
+      diff_real_ytd_total: "Quanto falta para atingir meta do ano. 0 se já atringiu",
+      diff_real_mtd_total: "Quanto falta para atingir meta do mês. 0 se já atringiu",
+      supearavit_revenue_ytd_total: "Quanto ultrapassou a meta do ano. 0 se ainda não atingiu",
+      supearavit_revenue_mtd_total: "Quanto ultrapassou a meta do mês. 0 se ainda não atingiu",
+
+    },
+    assertions: {
+      rowConditions: [
+        'revenue_goal_ytd + diff_goal_ytd_total = revenue_goal_current_year',
+        'revenue_goal_mtd + diff_goal_mtd_total = revenue_goal_current_month',
+        'revenue_ytd + diff_real_ytd_total - supearavit_revenue_ytd_total = revenue_goal_current_year',
+        'revenue_mtd + diff_real_mtd_total - supearavit_revenue_mtd_total = revenue_goal_current_month',
+        'diff_goal_ytd_total >= 0',
+        'diff_goal_mtd_total >= 0'
+      ]
+    },
+    tags: ['1-general']
+}
+--
+--    
+--
+WITH revenue_and_goals AS (
+SELECT
+  SUM(CASE
+    WHEN date_kpi >= DATE_TRUNC(CURRENT_DATE(), YEAR) AND date_kpi < CURRENT_DATE() THEN revenue_total
+    ELSE 0 END
+  ) AS revenue_ytd,
+
+  SUM(CASE
+    WHEN date_kpi >= DATE_TRUNC(CURRENT_DATE(), MONTH) AND date_kpi < CURRENT_DATE() THEN revenue_total
+    ELSE 0 END 
+  ) AS revenue_mtd,
+
+  SUM( CASE
+    WHEN date_kpi >= DATE_TRUNC(CURRENT_DATE(), YEAR) AND date_kpi < CURRENT_DATE() THEN goal_revenue
+    ELSE 0
+  END ) AS revenue_goal_ytd,
+
+  SUM( CASE
+      WHEN date_kpi >= DATE_TRUNC(CURRENT_DATE(), MONTH) AND date_kpi < CURRENT_DATE() THEN goal_revenue
+      ELSE 0  END
+  ) AS revenue_goal_mtd,
+
+  SUM( CASE
+    WHEN EXTRACT(YEAR FROM date_kpi) = EXTRACT(YEAR FROM CURRENT_DATE()) THEN goal_revenue
+    ELSE 0 END
+  ) AS revenue_goal_current_year,
+
+  SUM( CASE
+      WHEN EXTRACT(YEAR FROM date_kpi) = EXTRACT(YEAR FROM CURRENT_DATE()) 
+       AND EXTRACT(MONTH FROM date_kpi) = EXTRACT(MONTH FROM CURRENT_DATE()) THEN goal_revenue
+    ELSE 0 END
+  ) AS revenue_goal_current_month
+
+
+FROM
+  ${ref("kpis")}
+)
+--------------------------------------------------------------------------------
+-- Retorna os valores e os percentuais de atingimento
+SELECT 
+  *,
+  -- Percentuais de atingimento
+  revenue_ytd / revenue_goal_ytd AS revenue_goal_ytd_percent,
+  revenue_mtd / revenue_goal_mtd AS revenue_goal_mtd_percent,
+  revenue_ytd / revenue_goal_current_year AS revenue_goal_current_year_percent,
+  revenue_mtd / revenue_goal_current_month AS revenue_goal_current_month_percent,
+
+  -- Diferenças do MTD e YTD (expectativas) para o total 
+  revenue_goal_current_year - revenue_goal_ytd AS diff_goal_ytd_total,
+  revenue_goal_current_month - revenue_goal_mtd AS diff_goal_mtd_total,
+
+  -- Diferenças do real para a meta ANO (se já passou, calcula o superavit)
+  CASE WHEN revenue_ytd <= revenue_goal_current_year THEN revenue_goal_current_year - revenue_ytd
+     ELSE 0 END AS diff_real_ytd_total,
+  CASE WHEN revenue_ytd > revenue_goal_current_year THEN revenue_ytd - revenue_goal_current_year  
+     ELSE 0 END AS supearavit_revenue_ytd_total,
+
+  -- Diferenças do real para a meta ANO (se já passou, calcula o superavit)
+  CASE WHEN revenue_mtd <= revenue_goal_current_month THEN revenue_goal_current_month - revenue_mtd
+     ELSE 0 END AS diff_real_mtd_total,
+  CASE WHEN revenue_mtd > revenue_goal_current_month THEN revenue_mtd - revenue_goal_current_month  
+     ELSE 0 END AS supearavit_revenue_mtd_total
+
+FROM
+  revenue_and_goals
+
