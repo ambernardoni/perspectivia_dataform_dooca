@@ -1,9 +1,5 @@
 --------------------------------------------------------------------------------------------------
 -- Totaliza diversos KPIs da operação de e-commerce, dia a dia
--- Notas: Para facilitar o processamento downstream:
--- (que totaliza e calcula variações. Usas UNPIVOT, que demanta que seja tudo do mesmo tipo)
---     Usamos Float aqui (mesmo quando é inteiro)  
---     Não Usamos struct para agrupar campos parfecidos
 --------------------------------------------------------------------------------------------------
 
 config {
@@ -13,18 +9,18 @@ config {
     tags: ['1-general']
 }
 
----------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------
 -- KPIs da tabela de pedidos (orders) da plataforma de e-commerce
 WITH
   orders_kpis AS (
 SELECT
   DATE(creation_date) AS date_kpi,
   EXTRACT(DAYOFWEEK FROM creation_date) AS weekday,
-  CAST (COUNT (*) AS FLOAT64) AS orders,
-  CAST (COUNTIF(status_type = 'Cancelado') AS FLOAT64) AS orders_cancelled,
-  CAST (COUNT (*) * (30 + 130 *  RAND())  AS FLOAT64) AS sessions,   -- Arrumar aqui depois
-  CAST (SUM (quantity_variety_items) AS FLOAT64) AS quantity_variety_items,
-  CAST (SUM (quantity_items) AS FLOAT64) AS quantity_items,
+  COUNT (*) AS orders,
+  COUNTIF(status_type = 'Cancelado') AS orders_cancelled,
+  COUNT (*) * (30 + 130 *  RAND()) AS sessions_fake,   -- Arrumar aqui depois
+  SUM (quantity_variety_items) AS quantity_variety_items,
+  SUM (quantity_items) AS quantity_items,
   SUM (value.total) AS revenue_total,
   SUM (value.items) AS revenue_items,
   SUM (value.discounts) AS revenue_discounts,
@@ -35,7 +31,7 @@ GROUP BY
   date_kpi, weekday
   ),
 
----------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------
 -- KPIs da tabela de metas do produto Perspectivia para aquele tenant 
   goals_kpis AS (
 SELECT 
@@ -43,27 +39,46 @@ SELECT
   meta_faturamento as goal_revenue
 FROM 
   ${ref("pp_goals")}
+),
+
+-------------------------------------------------------------------
+-- KPIs da tabela do GA de sessions 
+ga_session_kpis AS (
+  SELECT
+    date as date_kpi,
+    sessions
+  FROM
+    ${ref("stg_ga_sessions_date")}
 )
 
----------------------------------------------------------------------------------------------------
+--===============================================================================
+--===============================================================================
 -- JUNTA OS KPIS
+-- Notas: Para facilitar o processamento downstream:
+-- (que totaliza e calcula variações. Usas UNPIVOT, que demanta que seja tudo do mesmo tipo)
+--     Usamos Float aqui (mesmo quando é inteiro)  
+--     Não Usamos struct para agrupar campos parfecidos
 
 SELECT
   COALESCE(o.date_kpi, g.date_kpi) AS date_kpi,
   o.weekday,
-  o.orders,
-  o.orders_cancelled,
-  o.sessions,
-  o.quantity_variety_items,
-  o.quantity_items,
-  o.revenue_total,
-  o.revenue_items,
-  o.revenue_discounts,
-  o.revenue_shipping,
-  g.goal_revenue
+  CAST( o.orders AS FLOAT64 ) AS orders,
+  CAST( o.orders_cancelled AS FLOAT64 ) AS orders_cancelled,
+  CAST( o.sessions_fake AS FLOAT64 ) AS sessions_fake,
+  CAST( s.sessions AS FLOAT64 ) AS sessions,
+  CAST( o.quantity_variety_items AS FLOAT64 ) AS quantity_variety_items,
+  CAST( o.quantity_items AS FLOAT64 ) AS quantity_items ,
+  CAST( o.revenue_total AS FLOAT64 ) AS revenue_total,
+  CAST( o.revenue_items AS FLOAT64 ) AS revenue_items,
+  CAST( o.revenue_discounts AS FLOAT64 ) AS revenue_discounts ,
+  CAST( o.revenue_shipping AS FLOAT64 ) AS revenue_shipping ,
+  CAST( g.goal_revenue AS FLOAT64 ) AS goal_revenue
 FROM
   orders_kpis o
 FULL OUTER JOIN
-  goals_kpis g
-ON
-  o.date_kpi = g.date_kpi
+  goals_kpis g ON o.date_kpi = g.date_kpi
+LEFT JOIN
+  ga_session_kpis s ON COALESCE(o.date_kpi, g.date_kpi) = s.date_kpi
+
+
+

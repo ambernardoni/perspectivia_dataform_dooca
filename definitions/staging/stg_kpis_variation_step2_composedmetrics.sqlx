@@ -59,11 +59,11 @@ GROUP BY
 -------------------------------------------
 -- + PERCENTUAL DE CANCELAMENTO
  UNION ALL SELECT
-  'percent_orders_cancelled' AS kpi,
+  'percent_orders_approved' AS kpi,
   period_name,
   visual_period_order,
-  IFNULL(SUM(CASE WHEN kpi = 'orders_cancelled' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN current_period_value END), 0), 0) AS current_period_value,
-  IFNULL(SUM(CASE WHEN kpi = 'orders_cancelled' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN previous_period_value END), 0), 0) AS previous_period_value,
+  IFNULL(1-SUM(CASE WHEN kpi = 'orders_cancelled' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN current_period_value END), 0), 0) AS current_period_value,
+  IFNULL(1-SUM(CASE WHEN kpi = 'orders_cancelled' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN previous_period_value END), 0), 0) AS previous_period_value,
 FROM
   ${ref('stg_kpis_variation_step1_puremetrics')}
 GROUP BY
