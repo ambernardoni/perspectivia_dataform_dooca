@@ -18,7 +18,6 @@ SELECT
   EXTRACT(DAYOFWEEK FROM creation_date) AS weekday,
   COUNT (*) AS orders,
   COUNTIF(status_type = 'Cancelado') AS orders_cancelled,
-  COUNT (*) * (30 + 130 *  RAND()) AS sessions_fake,   -- Arrumar aqui depois
   SUM (quantity_variety_items) AS quantity_variety_items,
   SUM (quantity_items) AS quantity_items,
   SUM (value.total) AS revenue_total,
@@ -64,7 +63,6 @@ SELECT
   o.weekday,
   CAST( o.orders AS FLOAT64 ) AS orders,
   CAST( o.orders_cancelled AS FLOAT64 ) AS orders_cancelled,
-  CAST( o.sessions_fake AS FLOAT64 ) AS sessions_fake,
   CAST( s.sessions AS FLOAT64 ) AS sessions,
   CAST( o.quantity_variety_items AS FLOAT64 ) AS quantity_variety_items,
   CAST( o.quantity_items AS FLOAT64 ) AS quantity_items ,
