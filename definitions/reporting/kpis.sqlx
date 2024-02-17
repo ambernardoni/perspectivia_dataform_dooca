@@ -23,7 +23,15 @@ SELECT
   SUM (value.total) AS revenue_total,
   SUM (value.items) AS revenue_items,
   SUM (value.discounts) AS revenue_discounts,
-  SUM (value.shipping) AS revenue_shipping
+  SUM (value.shipping) AS revenue_shipping,
+
+  -- recompra
+  COUNTIF(customer_stats.days_since_last_order <= 30) AS orders_repurchase_30_days,
+  COUNTIF(customer_stats.days_since_last_order <= 60) AS orders_repurchase_60_days,
+  COUNTIF(customer_stats.days_since_last_order <= 90) AS orders_repurchase_90_days,
+  COUNTIF(customer_stats.days_since_last_order <= 120) AS orders_repurchase_120_days,
+  COUNTIF(customer_stats.days_since_last_order <= 180) AS orders_repurchase_180_days,
+  COUNTIF(customer_stats.days_since_last_order <= 365) AS orders_repurchase_365_days
 FROM
   ${ref("orders")}
 GROUP BY
@@ -70,7 +78,14 @@ SELECT
   CAST( o.revenue_items AS FLOAT64 ) AS revenue_items,
   CAST( o.revenue_discounts AS FLOAT64 ) AS revenue_discounts ,
   CAST( o.revenue_shipping AS FLOAT64 ) AS revenue_shipping ,
-  CAST( g.goal_revenue AS FLOAT64 ) AS goal_revenue
+  CAST( g.goal_revenue AS FLOAT64 ) AS goal_revenue,
+
+  CAST( o.orders_repurchase_30_days AS FLOAT64 ) AS orders_repurchase_30_days,
+  CAST( o.orders_repurchase_60_days AS FLOAT64 ) AS orders_repurchase_60_days,
+  CAST( o.orders_repurchase_90_days AS FLOAT64 ) AS orders_repurchase_90_days,
+  CAST( o.orders_repurchase_120_days AS FLOAT64 ) AS orders_repurchase_120_days,
+  CAST( o.orders_repurchase_180_days AS FLOAT64 ) AS orders_repurchase_180_days,
+  CAST( o.orders_repurchase_365_days AS FLOAT64 ) AS orders_repurchase_365_days
 FROM
   orders_kpis o
 FULL OUTER JOIN
