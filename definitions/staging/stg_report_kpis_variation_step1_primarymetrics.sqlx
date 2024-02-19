@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------------------------
-  -- Calcula as variações dos KPIs PUROS em determinados períodos
+  -- Calcula as variações dos KPIs PRIMÁRIOS em determinados períodos
   -- Os KPIs já devem estar na tabela "kpis" e os que serão processados
   -- para calcular variações são escolhidos abaixo 
 --------------------------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ SELECT
 FROM
   kpis_pivot d
 JOIN
-  ${ref("kpis_variation_periods")} p
+  ${ref("report_kpis_variation_periods")} p
 ON
   d.date_kpi BETWEEN p.current_period_start AND p.current_period_end
   OR d.date_kpi BETWEEN p.previous_period_start AND p.previous_period_end

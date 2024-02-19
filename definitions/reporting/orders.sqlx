@@ -72,7 +72,6 @@ SELECT
 
 FROM
   order_deduplicated O
---  ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_orders")} O
 
 WHERE
   rn = 1 -- tira os registros duplicados

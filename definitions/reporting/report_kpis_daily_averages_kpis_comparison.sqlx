@@ -1,0 +1,18 @@
+config {
+    type: "view",
+    schema: "reporting",
+    description: "Comparação dos KPIs",
+    tags: ['1-general']
+}
+
+SELECT 
+  *
+FROM
+  ${ref("kpis")} k
+  LEFT JOIN
+  ${ref("report_kpis_daily_averages")} a
+ON
+  k.weekday = a.weekday_avg
+WHERE
+  k.date_kpi < CURRENT_DATE()
+  AND k.date_kpi >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)

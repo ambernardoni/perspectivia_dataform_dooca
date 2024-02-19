@@ -1,3 +1,8 @@
+--------------------------------------------------------------------------------
+-- Cria a tabela de médias por dia da semana 
+-- para a comparação dos relatórios de KPI
+--------------------------------------------------------------------------------
+
 config {
     type: "table",
     schema: "reporting",
@@ -16,7 +21,7 @@ WITH filtered_data AS (
 ) 
 
 SELECT
-  weekday,
+  weekday AS weekday_avg,
   AVG (orders) AS orders_avg,
   AVG (sessions) AS sessions_avg,
   AVG (quantity_variety_items) AS quantity_variety_items_avg,
