@@ -16,4 +16,4 @@ SELECT
     ELSE (current_period_value - previous_period_value) / previous_period_value 
   END AS percent_difference
 FROM
- ${ref('stg_kpis_variation_step2_composedmetrics')}
+ ${ref('stg_report_kpis_variation_step2_composedmetrics')}

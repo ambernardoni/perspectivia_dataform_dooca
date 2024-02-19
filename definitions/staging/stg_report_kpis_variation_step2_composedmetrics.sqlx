@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------------------------
   -- Adiciona as variações dos KPIs COMPOSTOS em determinados períodos
-  -- KPIs COMPOSTOS são relações entre KPIs PUROS
+  -- KPIs COMPOSTOS são relações entre KPIs PRIMÁRIOS
   -- (as métricas deverão ter sido processada pelo passo anterior (pure metrics))
 --------------------------------------------------------------------------------------------------
 config {
@@ -11,11 +11,11 @@ config {
 }
 
 -------------------------------------------
--- Métricas anteriores (puras)
+-- Métricas anteriores (primárisa)
 SELECT
   *
 FROM
-  ${ref('stg_kpis_variation_step1_puremetrics')}
+  ${ref('stg_report_kpis_variation_step1_primarymetrics')}
 
 -------------------------------------------
 -- + TICKET MÉDIO
@@ -26,7 +26,7 @@ UNION ALL SELECT
   IFNULL(SUM(CASE WHEN kpi = 'revenue_total' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN current_period_value END), 0), 0) AS current_period_value,
   IFNULL(SUM(CASE WHEN kpi = 'revenue_total' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN previous_period_value END), 0), 0) AS previous_period_value,
 FROM
-  ${ref('stg_kpis_variation_step1_puremetrics')}
+  ${ref('stg_report_kpis_variation_step1_primarymetrics')}
 GROUP BY
   period_name, visual_period_order
  
@@ -39,7 +39,7 @@ GROUP BY
   IFNULL(SUM(CASE WHEN kpi = 'orders' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'sessions' THEN current_period_value END), 0), 0) AS current_period_value,
   IFNULL(SUM(CASE WHEN kpi = 'orders' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'sessions' THEN previous_period_value END), 0), 0) AS previous_period_value,
 FROM
-  ${ref('stg_kpis_variation_step1_puremetrics')}
+  ${ref('stg_report_kpis_variation_step1_primarymetrics')}
 GROUP BY
   period_name, visual_period_order
 
@@ -52,20 +52,20 @@ GROUP BY
   IFNULL(SUM(CASE WHEN kpi = 'quantity_variety_items' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN current_period_value END), 0), 0) AS current_period_value,
   IFNULL(SUM(CASE WHEN kpi = 'quantity_variety_items' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN previous_period_value END), 0), 0) AS previous_period_value,
 FROM
-  ${ref('stg_kpis_variation_step1_puremetrics')}
+  ${ref('stg_report_kpis_variation_step1_primarymetrics')}
 GROUP BY
   period_name, visual_period_order
 
 -------------------------------------------
 -- + PERCENTUAL DE CANCELAMENTO
  UNION ALL SELECT
-  'percent_orders_cancelled' AS kpi,
+  'percent_orders_approved' AS kpi,
   period_name,
   visual_period_order,
-  IFNULL(SUM(CASE WHEN kpi = 'orders_cancelled' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN current_period_value END), 0), 0) AS current_period_value,
-  IFNULL(SUM(CASE WHEN kpi = 'orders_cancelled' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN previous_period_value END), 0), 0) AS previous_period_value,
+  IFNULL(1-SUM(CASE WHEN kpi = 'orders_cancelled' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN current_period_value END), 0), 0) AS current_period_value,
+  IFNULL(1-SUM(CASE WHEN kpi = 'orders_cancelled' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'orders' THEN previous_period_value END), 0), 0) AS previous_period_value,
 FROM
-  ${ref('stg_kpis_variation_step1_puremetrics')}
+  ${ref('stg_report_kpis_variation_step1_primarymetrics')}
 GROUP BY
   period_name, visual_period_order
 
