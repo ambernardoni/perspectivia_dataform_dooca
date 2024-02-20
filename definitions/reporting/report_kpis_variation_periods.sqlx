@@ -35,9 +35,8 @@ UNION ALL SELECT
   DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 29 DAY) as previous_period_start,
   DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 56 DAY) as previous_period_end,
 
-
 UNION ALL SELECT 
-  'MTD vs mês passado' AS period_name,
+  'Este mês vs mês passado' AS period_name,
   4 AS visual_period_order, -- a ordem em que vai aparecer na tela
   DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) AS current_period_end, -- Yesterday
   DATE_TRUNC(CURRENT_DATE('America/Sao_Paulo'), MONTH) AS current_period_start, -- Start of current month
@@ -45,20 +44,20 @@ UNION ALL SELECT
   DATE_TRUNC(DATE_SUB(DATE_TRUNC(CURRENT_DATE('America/Sao_Paulo'), MONTH), INTERVAL 1 MONTH), MONTH) AS previous_period_start -- Start of last month
 
 UNION ALL SELECT
-  'YTD vs ano passado' AS period_name,
+  'Este ano vs ano passado' AS period_name,
   5 AS visual_period_order, -- a ordem em que vai aparecer na tela
   DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) AS current_period_end, -- Yesterday
   DATE_TRUNC(CURRENT_DATE('America/Sao_Paulo'), YEAR) AS current_period_start, -- Start of this year
   DATE_SUB(DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 YEAR), INTERVAL 1 DAY) AS previous_period_start, -- O mesmo dia de "ontem", mas no ano passado
   DATE_SUB(DATE_TRUNC(CURRENT_DATE('America/Sao_Paulo'), YEAR), INTERVAL 1 YEAR) AS previous_period_end -- Início do ano passado
 
-UNION ALL SELECT
-  '28 dias vs ano anterior' AS period_name,
-  6 AS visual_period_order, -- a ordem em que vai aparecer na tela
-  DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) AS current_period_end,
-  DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 28 DAY) AS current_period_start,
-  DATE_SUB(DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 YEAR), INTERVAL 1 DAY) AS previous_period_end,
-  DATE_SUB(DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 YEAR), INTERVAL 28 DAY) AS previous_period_start
+--UNION ALL SELECT
+--  '28 dias vs ano anterior' AS period_name,
+--  6 AS visual_period_order, -- a ordem em que vai aparecer na tela
+--  DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) AS current_period_end,
+--  DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 28 DAY) AS current_period_start,
+--  DATE_SUB(DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 YEAR), INTERVAL 1 DAY) AS previous_period_end,
+--  DATE_SUB(DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 YEAR), INTERVAL 28 DAY) AS previous_period_start
 
 --UNION ALL SELECT
 --  '7 dias vs ano anterior' AS period_name,

@@ -16,19 +16,56 @@ WITH filtered_data AS (
   FROM
     ${ref('kpis')}
   WHERE
-    date_kpi > DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 70 DAY) AND
-    date_kpi < (CURRENT_DATE('America/Sao_Paulo'))
-) 
+    date_kpi > DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 77 DAY) AND
+    date_kpi < DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 7 DAY)
+),
 
+quartiles AS (
+  SELECT
+    weekday,
+    APPROX_QUANTILES(orders, 4)[OFFSET(1)] AS Q1_kpi1,
+    APPROX_QUANTILES(orders, 4)[OFFSET(3)] AS Q3_kpi1,
+
+    APPROX_QUANTILES(sessions, 4)[OFFSET(1)] AS Q1_kpi2,
+    APPROX_QUANTILES(sessions, 4)[OFFSET(3)] AS Q3_kpi2,
+    
+    APPROX_QUANTILES(revenue_total, 4)[OFFSET(1)] AS Q1_kpi3,
+    APPROX_QUANTILES(revenue_total, 4)[OFFSET(3)] AS Q3_kpi3,
+ FROM
+    filtered_data
+ GROUP BY
+    weekday
+)
+
+
+-- == Considera somente os indicadores do "interquartile range|"
 SELECT
-  weekday AS weekday_avg,
-  AVG (orders) AS orders_avg,
-  AVG (sessions) AS sessions_avg,
-  AVG (quantity_variety_items) AS quantity_variety_items_avg,
-  AVG (revenue_total) AS revenue_total_avg
+ f.weekday as weekday_avg,
+  -- orders
+  AVG(IF(f.orders BETWEEN q.Q1_kpi1 - 1.5 * (q.Q3_kpi1 - q.Q1_kpi1) 
+                      AND q.Q3_kpi1 + 1.5 * (q.Q3_kpi1 - q.Q1_kpi1), f.orders, NULL)) AS orders_avg,
+  -- sessions
+  AVG(IF(f.sessions BETWEEN q.Q1_kpi2 - 1.5 * (q.Q3_kpi2 - q.Q1_kpi2) 
+                        AND q.Q3_kpi2 + 1.5 * (q.Q3_kpi2 - q.Q1_kpi2), f.sessions, NULL)) AS sessions_avg,
+  -- revenue
+  AVG(IF(f.revenue_total BETWEEN q.Q1_kpi3 - 1.5 * (q.Q3_kpi3 - q.Q1_kpi3) 
+                             AND q.Q3_kpi3 + 1.5 * (q.Q3_kpi3 - q.Q1_kpi3), f.revenue_total, NULL)) AS revenue_total_avg,
 FROM
-  filtered_data 
+  filtered_data f
+JOIN
+  quartiles q ON f.weekday = q.weekday
 GROUP BY
-  weekday
-HAVING
-  weekday IS NOT NULL
+  f.weekday
+
+--SELECT
+--  weekday AS weekday_avg,
+--  AVG (orders) AS orders_avg,
+--  AVG (sessions) AS sessions_avg,
+--  AVG (quantity_variety_items) AS quantity_variety_items_avg,
+--  AVG (revenue_total) AS revenue_total_avg
+--FROM
+--  filtered_data 
+--GROUP BY
+--  weekday
+--HAVING
+--  weekday IS NOT NULL
