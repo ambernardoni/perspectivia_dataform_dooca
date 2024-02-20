@@ -6,6 +6,18 @@ config {
 }
 
 SELECT
+  O.order_id,
+  creation_date,
+  order_type,
+  order_type_detail,
+  status_type,
+  status_type_detail,
+  point_of_sale,
+  payment,
+  address,
+  customer,
+  quantity_variety_items,
+  quantity_items,
   STRUCT (
     it.product_name,
     it.product_sku,
@@ -17,8 +29,7 @@ SELECT
     it.price_total,
     it.price_unit,
     it.price_discount
-  ) as item,
- O.*
+  ) as item
 FROM
   ${ref("orders")} AS O, UNNEST (items) AS it
 
