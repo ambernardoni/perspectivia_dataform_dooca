@@ -6,12 +6,18 @@ config {
     type: "table",
     schema: "reporting",
     description: "Principais KPIs do ecommerce, dia a dia",
-    tags: ['1-general']
+    tags: ['1-general'],
+    assertions: {
+      uniqueKey: ["date_kpi"],
+      nonNull: ["date_kpi"]
+    }
 }
 
--------------------------------------------------------------------
--- KPIs da tabela de pedidos (orders) da plataforma de e-commerce
 WITH
+-------------------------------------------------------------------
+-- PLATAFORMA DE E-COMMERCE
+-- KPIs da tabela de pedidos (orders) da plataforma de e-commerce
+
   orders_kpis AS (
 SELECT
   DATE(creation_date) AS date_kpi,
@@ -38,7 +44,9 @@ GROUP BY
   date_kpi, weekday
   ),
 
+
 -------------------------------------------------------------------
+-- METAS
 -- KPIs da tabela de metas do produto Perspectivia para aquele tenant 
   goals_kpis AS (
 SELECT 
@@ -49,14 +57,46 @@ FROM
 ),
 
 -------------------------------------------------------------------
+-- GOOGLE ANALYTICS KPIS
+
 -- KPIs da tabela do GA de sessions 
 ga_session_kpis AS (
   SELECT
     date as date_kpi,
     sessions
   FROM
-    ${ref("stg_ga_sessions_date")}
+    ${ref("stg_ga_sessions")}
+),
+
+-- KPIs da tabela do GA de eventos 
+ga_events_kpis AS (
+
+  SELECT
+    date as date_kpi,
+    SUM ((CASE WHEN eventName ="add_to_cart" THEN sessions ELSE 0 END)) AS site_event_add_to_cart,
+    SUM ((CASE WHEN eventName ="begin_checkout" THEN sessions ELSE 0 END)) AS site_event_begin_checkout,
+    SUM ((CASE WHEN eventName ="add_shipping_info" THEN sessions ELSE 0 END)) AS site_event_add_shipping_info,
+    SUM ((CASE WHEN eventName ="add_payment_info" THEN sessions ELSE 0 END)) AS site_event_add_payment_info
+  FROM
+    ${ref("stg_ga_events")}
+  GROUP BY
+    date
+),
+
+-------------------------------------------------------------------
+-- JUNTA AS DATAS
+unified_dates AS (
+  SELECT date_kpi FROM orders_kpis
+  UNION DISTINCT
+  SELECT date_kpi FROM goals_kpis
+  UNION DISTINCT
+  SELECT date_kpi FROM ga_session_kpis
+  UNION DISTINCT
+  SELECT date_kpi FROM ga_events_kpis
 )
+
+
+
 
 --===============================================================================
 --===============================================================================
@@ -71,7 +111,7 @@ SELECT
   o.weekday,
   CAST( o.orders AS FLOAT64 ) AS orders,
   CAST( o.orders_cancelled AS FLOAT64 ) AS orders_cancelled,
-  CAST( s.sessions AS FLOAT64 ) AS sessions,
+  CAST( ga_s.sessions AS FLOAT64 ) AS sessions,
   CAST( o.quantity_variety_items AS FLOAT64 ) AS quantity_variety_items,
   CAST( o.quantity_items AS FLOAT64 ) AS quantity_items ,
   CAST( o.revenue_total AS FLOAT64 ) AS revenue_total,
@@ -85,13 +125,18 @@ SELECT
   CAST( o.orders_repurchase_90_days AS FLOAT64 ) AS orders_repurchase_90_days,
   CAST( o.orders_repurchase_120_days AS FLOAT64 ) AS orders_repurchase_120_days,
   CAST( o.orders_repurchase_180_days AS FLOAT64 ) AS orders_repurchase_180_days,
-  CAST( o.orders_repurchase_365_days AS FLOAT64 ) AS orders_repurchase_365_days
-FROM
-  orders_kpis o
-FULL OUTER JOIN
-  goals_kpis g ON o.date_kpi = g.date_kpi
-LEFT JOIN
-  ga_session_kpis s ON COALESCE(o.date_kpi, g.date_kpi) = s.date_kpi
+  CAST( o.orders_repurchase_365_days AS FLOAT64 ) AS orders_repurchase_365_days,
+
+  CAST(ga_ev.site_event_add_to_cart AS FLOAT64 ) AS site_event_add_to_cart,
+  CAST(ga_ev.site_event_begin_checkout AS FLOAT64 ) AS site_event_begin_checkout,
+  CAST(ga_ev.site_event_add_shipping_info AS FLOAT64 ) AS site_event_add_shipping_info,
+  CAST(ga_ev.site_event_add_payment_info AS FLOAT64 ) AS site_event_add_payment_info,
+
+FROM unified_dates ud
+LEFT JOIN orders_kpis o ON ud.date_kpi = o.date_kpi
+LEFT JOIN goals_kpis g ON ud.date_kpi = g.date_kpi
+LEFT JOIN ga_session_kpis ga_s ON ud.date_kpi = ga_s.date_kpi
+LEFT JOIN ga_events_kpis ga_ev ON ud.date_kpi = ga_ev.date_kpi
 
 
 

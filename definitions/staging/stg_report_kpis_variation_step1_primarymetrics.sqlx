@@ -26,8 +26,9 @@ WITH
         orders AS "orders",
         orders_cancelled AS 'orders_cancelled',
         sessions AS 'sessions',
-        quantity_variety_items  AS 'quantity_variety_items'
-
+        quantity_variety_items  AS 'quantity_variety_items',
+        site_event_add_to_cart AS 'site_event_add_to_cart',
+        site_event_begin_checkout AS 'site_event_begin_checkout'
     )) ) 
         
 ------------------------------------------------------------------------------------
