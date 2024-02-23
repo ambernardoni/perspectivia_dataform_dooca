@@ -69,4 +69,42 @@ FROM
 GROUP BY
   period_name, visual_period_order
 
+-------------------------------------------
+-- + CONVERSÂO SESSIONS -> ADD TO CART 
+ UNION ALL SELECT
+  'conversion_session_to_cart' AS kpi,
+  period_name,
+  visual_period_order,
+  IFNULL(SUM(CASE WHEN kpi = 'site_event_add_to_cart' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'sessions' THEN current_period_value END), 0), 0) AS current_period_value,
+  IFNULL(SUM(CASE WHEN kpi = 'site_event_add_to_cart' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'sessions' THEN previous_period_value END), 0), 0) AS previous_period_value,
+FROM
+  ${ref('stg_report_kpis_variation_step1_primarymetrics')}
+GROUP BY
+  period_name, visual_period_order
+
+-------------------------------------------
+-- + CONVERSÂO ADD TO CART -> CHECKOUT 
+ UNION ALL SELECT
+  'conversion_cart_to_checkout' AS kpi,
+  period_name,
+  visual_period_order,
+  IFNULL(SUM(CASE WHEN kpi = 'site_event_begin_checkout' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'site_event_add_to_cart' THEN current_period_value END), 0), 0) AS current_period_value,
+  IFNULL(SUM(CASE WHEN kpi = 'site_event_begin_checkout' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'site_event_add_to_cart' THEN previous_period_value END), 0), 0) AS previous_period_value,
+FROM
+  ${ref('stg_report_kpis_variation_step1_primarymetrics')}
+GROUP BY
+  period_name, visual_period_order
+
+-------------------------------------------
+-- + CONVERSÂO  CHECKOUT -> ORDER
+ UNION ALL SELECT
+  'conversion_checkout_to_order' AS kpi,
+  period_name,
+  visual_period_order,
+  IFNULL(SUM(CASE WHEN kpi = 'orders' THEN current_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'site_event_begin_checkout' THEN current_period_value END), 0), 0) AS current_period_value,
+  IFNULL(SUM(CASE WHEN kpi = 'orders' THEN previous_period_value END) / NULLIF(SUM(CASE WHEN kpi = 'site_event_begin_checkout' THEN previous_period_value END), 0), 0) AS previous_period_value,
+FROM
+  ${ref('stg_report_kpis_variation_step1_primarymetrics')}
+GROUP BY
+  period_name, visual_period_order
 

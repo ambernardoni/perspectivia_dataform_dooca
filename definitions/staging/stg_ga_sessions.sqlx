@@ -1,0 +1,38 @@
+--------------------------------------------------------------------------------------------------
+  -- Cria uma view da tabela que contém as informações de sessão do Google Analytics:
+  --  - tira os registros duplicados 
+  --  - cria a tabela vazia se ela não existir (no caso do cliente não ter feito a integração)
+--------------------------------------------------------------------------------------------------
+
+config {
+    type: "view",
+    schema: "staging",
+    description: "Sessões do Googla Analytics por dia",
+    tags: ['1-general'],
+    assertions: {
+      uniqueKey: ["date"],
+      nonNull: ["date"]
+    }
+}
+
+-- Cria a tabela vazia, se ela não existir (caso o cliente não tenha feito a integração com o GA)
+pre_operations {
+  CREATE TABLE IF NOT EXISTS ${ref('raw_ga_custom_sessions')} (
+    date STRING,
+    sessions INTEGER,
+    property_id STRING
+  )
+}
+
+-- Seleciona as sessões, ajustando foramtos e de-duplicando
+SELECT
+  DATE(PARSE_TIMESTAMP('%Y%m%d', date, 'America/Sao_Paulo')) as date,
+  MAX(sessions) AS sessions
+FROM
+  ${ref('raw_ga_custom_sessions')}
+GROUP BY
+  DATE(PARSE_TIMESTAMP('%Y%m%d', date, 'America/Sao_Paulo'))
+
+
+
+

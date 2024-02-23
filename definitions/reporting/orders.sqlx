@@ -17,6 +17,10 @@ config {
             method: "Método de pagamento"
           }
         }
+    },
+    assertions: {
+      uniqueKey: ["order_id"],
+      nonNull: ["order_id", "creation_date", "value.total"]
     }
 }
 

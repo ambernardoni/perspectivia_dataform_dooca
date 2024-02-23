@@ -1,22 +1,26 @@
 --------------------------------------------------------------------------------------------------
-  -- Cria uma view da tabela "raw_ga_custom_session_date", que contém as informações de sessão.
-  -- nesse processo:
+  -- Cria uma view da tabela que contém as informações de sessão do Google Analytics:
   --  - tira os registros duplicados 
   --  - cria a tabela vazia se ela não existir (no caso do cliente não ter feito a integração)
 --------------------------------------------------------------------------------------------------
-
 config {
     type: "view",
     schema: "staging",
-    description: "Tira registros duplicados",
-    tags: ['1-general']
+    description: "Eventos do Google Analytics por dia",
+    tags: ['1-general'],
+    assertions: {
+      uniqueKey: [["date","eventName"]],
+      nonNull: ["date", "eventName"]
+    }
 }
 
 -- Cria a tabela vazia, se ela não existir (caso o cliente não tenha feito a integração com o GA)
 pre_operations {
-  CREATE TABLE IF NOT EXISTS ${ref('raw_ga_custom_sessions_date')} (
+  CREATE TABLE IF NOT EXISTS ${ref('raw_ga_custom_events')} (
     date STRING,
     sessions INTEGER,
+    eventName STRING,
+    eventCount INTEGER,
     property_id STRING
   )
 }
@@ -24,12 +28,11 @@ pre_operations {
 -- Seleciona as sessões, ajustando foramtos e de-duplicando
 SELECT
   DATE(PARSE_TIMESTAMP('%Y%m%d', date, 'America/Sao_Paulo')) as date,
-  MAX(sessions) AS sessions
+  eventName,
+  MAX(sessions) AS sessions,
+  MAX(eventCount) AS eventCount
 FROM
-  ${ref('raw_ga_custom_sessions_date')}
+  ${ref('raw_ga_custom_events')}
 GROUP BY
-  DATE(PARSE_TIMESTAMP('%Y%m%d', date, 'America/Sao_Paulo'))
-
-
-
-
+  DATE(PARSE_TIMESTAMP('%Y%m%d', date, 'America/Sao_Paulo')),
+  eventName
