@@ -1,0 +1,31 @@
+--------------------------------------------------------------------------------------------------
+  -- Cria uma view da tabela que contém as informações de metas
+  --  - cria a tabela vazia se ela não existir (no caso do cliente não ter feito a integração)
+--------------------------------------------------------------------------------------------------
+
+config {
+    type: "view",
+    schema: "staging",
+    description: "Metas da loja",
+    tags: ['1-general'],
+    assertions: {
+      uniqueKey: ["date_creation"],
+      nonNull: ["date_creation"]
+    }
+}
+
+-- Cria a tabela vazia, se ela não existir (caso o cliente não tenha feito a integração com o GA)
+pre_operations {
+  CREATE TABLE IF NOT EXISTS ${ref('pp_goals')} (
+    date_cresation Date,
+    meta_faturamento FLOAT64,
+    meta_pedidos FLOAT64
+  )
+}
+
+-- Seleciona as sessões, ajustando foramtos e de-duplicando
+SELECT
+  *
+FROM
+  ${ref('pp_goals')}
+

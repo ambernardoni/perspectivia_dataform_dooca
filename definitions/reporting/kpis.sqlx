@@ -21,7 +21,6 @@ WITH
   orders_kpis AS (
 SELECT
   DATE(creation_date) AS date_kpi,
-  EXTRACT(DAYOFWEEK FROM creation_date) AS weekday,
   COUNT (*) AS orders,
   COUNTIF(status_type = 'Cancelado') AS orders_cancelled,
   SUM (quantity_variety_items) AS quantity_variety_items,
@@ -41,7 +40,7 @@ SELECT
 FROM
   ${ref("orders")}
 GROUP BY
-  date_kpi, weekday
+  date_kpi
   ),
 
 
@@ -53,7 +52,7 @@ SELECT
   date_creation as date_kpi, 
   meta_faturamento as goal_revenue
 FROM 
-  ${ref("pp_goals")}
+  ${ref("stg_pp_goals")}
 ),
 
 -------------------------------------------------------------------
@@ -107,8 +106,8 @@ unified_dates AS (
 --     Não Usamos struct para agrupar campos parfecidos
 
 SELECT
-  COALESCE(o.date_kpi, g.date_kpi) AS date_kpi,
-  o.weekday,
+  ud.date_kpi AS date_kpi,
+  EXTRACT(DAYOFWEEK FROM ud.date_kpi) AS weekday,
   CAST( o.orders AS FLOAT64 ) AS orders,
   CAST( o.orders_cancelled AS FLOAT64 ) AS orders_cancelled,
   CAST( ga_s.sessions AS FLOAT64 ) AS sessions,
