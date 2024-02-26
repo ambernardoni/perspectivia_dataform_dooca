@@ -7,10 +7,10 @@
   "schemaSuffix": "ppdev",
 
 
-  "vars": {
-    "rawDataset" : "raw_tskyhill",
-    "ecommPlatName" : "nuvemshop"
-  }
 
+  "vars": {
+    "rawDataset" : "raw_tartmello",
+    "ecommPlatName" : "dooca"
+  }
 
 }
