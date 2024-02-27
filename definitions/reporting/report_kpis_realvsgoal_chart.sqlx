@@ -1,6 +1,12 @@
 --------------------------------------------------------------------------------
 -- Cria a tabela de dados ogranizados para o relatório 
 -- de KPIs meta vs realizado (barras comparando real vs realizado)
+-- OBS.
+-- #1. tem uma peculiaridade para permitir a ordenação correta no dashboard:
+--      a métrica ' REalizado' começa com um espaço em branco
+-- #2 - os nomes dos campos estão vinculados ás cores do preset. Se mudar aqui, 
+-- tem que ajustar nas propriedades do dashboard
+-- EDIT DASHBOARD - Edit Properties - advanced
 --------------------------------------------------------------------------------
 
 config {
@@ -11,20 +17,20 @@ config {
 }
 
 -- ANO - Expectativa vs realizado
-SELECT 0 AS ord,'year' AS period, 'Meta' AS type_goal, ' Realizado' AS metric, revenue_goal_ytd AS value_goal FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+SELECT 0 AS ord,'year' AS period, 'Meta' AS type_goal, ' Realizado - meta' AS metric, revenue_goal_ytd AS value_goal FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
 SELECT 10,'year', 'Meta', 'Falta para meta', diff_goal_ytd_total FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
 SELECT 100,'year', 'Meta', 'Acima da meta', NULL FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
 
-SELECT 0,'year', 'Real', ' Realizado', revenue_ytd FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+SELECT 0,'year', 'Real', CASE WHEN revenue_ytd >= revenue_goal_ytd THEN ' Realizado' ELSE ' Realizado - alerta' END , revenue_ytd - supearavit_revenue_ytd_total FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
 SELECT 10,'year', 'Real', 'Falta para meta', diff_real_ytd_total FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
 SELECT 100,'year', 'Real', 'Acima da meta', supearavit_revenue_ytd_total FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
 
 -- MÊS - Expectativa vs realizado
-SELECT 0,'month', 'Meta', ' Realizado', revenue_goal_mtd FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+SELECT 0,'month', 'Meta', ' Realizado - meta', revenue_goal_mtd FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
 SELECT 10,'month', 'Meta', 'Falta para meta', diff_goal_mtd_total FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
 SELECT 100,'month', 'Meta', 'Acima da meta', NULL FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
   
-SELECT 0,'month', 'Real', ' Realizado', revenue_mtd FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
+SELECT 0,'month', 'Real', CASE WHEN revenue_mtd >= revenue_goal_mtd THEN ' Realizado' ELSE ' Realizado - alerta' END, revenue_mtd - supearavit_revenue_mtd_total FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
 SELECT 10,'month', 'Real', 'Falta para meta', diff_real_mtd_total FROM ${ref("report_kpis_realvsgoal_table")} UNION ALL
 SELECT 100,'month', 'Real', 'Acima da meta', supearavit_revenue_mtd_total FROM ${ref("report_kpis_realvsgoal_table")} 
 
