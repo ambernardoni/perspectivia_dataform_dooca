@@ -28,4 +28,5 @@ SELECT
   *
 FROM
   ${ref('pp_goals')}
-
+WHERE
+  date_creation IS NOT NULL
