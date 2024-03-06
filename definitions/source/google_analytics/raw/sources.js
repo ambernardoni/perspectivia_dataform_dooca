@@ -13,3 +13,9 @@ declare({
   name: "raw_ga_custom_events",
   description: "Tabela de eventos do Google Analytics, agrupado por dia"
 });
+
+declare({
+  schema: dataform.projectConfig.vars.rawDataset,
+  name: "raw_ga_custom_traffic",
+  description: "Tabela de dados de tráfego do Google Analytics, agrupado por dia"
+});

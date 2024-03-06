@@ -9,9 +9,8 @@
 
 
   "vars": {
-    "rawDataset" : "raw_tskyhill",
-    "ecommPlatName" : "nuvemshop"
+    "rawDataset" : "raw_tfkennedy",
+    "ecommPlatName" : "b4c"
   }
-
 
 }

@@ -1,6 +1,6 @@
-
+//-----------------------------------------------
 // status_type [Confirmado, Cancelado, Outros]
-function status_type_group(status){
+function order_status_type(status){
   return `
   case
     when ${status} in ('open') then 'Confirmado'
@@ -8,20 +8,19 @@ function status_type_group(status){
     else 'Outros'
   end`; }
 
-
-// payment.method DEPRECATED - Não mais usado
-function payment_method_group(method){
+//-----------------------------------------------
+// payment_status_type [Confirmado, Cancelado, Pendente, Outros]
+function payment_status_type(status){
   return `
   case
-    when ${method} in ('pix') then 'Pix'
-    when ${method} in ('paypal') then 'Paypal'
-    when ${method} in ('marketplace') then 'Marketplace'
-    when ${method} in ('billet') then 'Boleto'
-    when ${method} in ('creditcard') then 'Cartão de crédito'
-    when ${method} in ('app') then 'Aplicativo'
+    when ${status} in ('approved') then 'Confirmado'
+    when ${status} in ('canceled', 'refunded', 'denied', 'expired') then 'Cancelado'
+    when ${status} in ('pending') then 'Pendente'
     else 'Outros'
   end`; }
 
+
 module.exports = {
-  status_type_group
+  order_status_type,
+  payment_status_type
 };

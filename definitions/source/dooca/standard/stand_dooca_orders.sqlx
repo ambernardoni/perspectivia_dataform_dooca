@@ -18,7 +18,7 @@ SELECT
 
   type AS order_type,          -- Dooca guarda devolução de alguma forma?
   type as order_type_detail,
-  ${dooca.status_type_group("status")} AS status_type,
+  ${dooca.order_status_type("status")} AS status_type,
   status AS status_type_detail,     
 
   "e-commerce" AS point_of_sale, -- Dooca não guarda outros parâmteros aqui?
@@ -40,6 +40,8 @@ SELECT
   -------------  payment -------------  
   STRUCT 
   (
+    ${dooca.payment_status_type("payment_status")}  AS status_type,
+    payment_status AS status_detail,
     JSON_VALUE (payment ,"$.method") AS method,
     JSON_VALUE (payment ,"$.name") AS method_detail
   )

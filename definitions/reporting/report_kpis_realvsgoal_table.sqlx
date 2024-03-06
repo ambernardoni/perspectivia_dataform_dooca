@@ -82,11 +82,11 @@ FROM
 -- Retorna os valores e os percentuais de atingimento
 SELECT 
   *,
-  -- Percentuais de atingimento
-  revenue_ytd / revenue_goal_ytd AS revenue_goal_ytd_percent,
-  revenue_mtd / revenue_goal_mtd AS revenue_goal_mtd_percent,
-  revenue_ytd / revenue_goal_current_year AS revenue_goal_current_year_percent,
-  revenue_mtd / revenue_goal_current_month AS revenue_goal_current_month_percent,
+-- Percentuais de atingimento
+  COALESCE(SAFE_DIVIDE(revenue_ytd, revenue_goal_ytd), 0) AS revenue_goal_ytd_percent,
+  COALESCE(SAFE_DIVIDE(revenue_mtd, revenue_goal_mtd), 0) AS revenue_goal_mtd_percent,
+  COALESCE(SAFE_DIVIDE(revenue_ytd, revenue_goal_current_year), 0) AS revenue_goal_current_year_percent,
+  COALESCE(SAFE_DIVIDE(revenue_mtd, revenue_goal_current_month), 0) AS revenue_goal_current_month_percent,
 
   -- Diferenças do MTD e YTD (expectativas) para o total 
   revenue_goal_current_year - revenue_goal_ytd AS diff_goal_ytd_total,
