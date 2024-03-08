@@ -11,13 +11,13 @@ config {
 -- A maior parte da lógica de transformação está aqui.
 SELECT
   _airbyte_extracted_at,
-  SAFE_CAST(id AS STRING) AS order_id,
+  SAFE_CAST(number AS STRING) AS order_id,
   SAFE_CAST(created_at AS TIMESTAMP) AS creation_date,
   SAFE_CAST(updated_at AS TIMESTAMP) AS update_date,
 
   "order" AS order_type,          -- Dooca guarda devolução de alguma forma?
   "" as order_type_detail,
-  ${nuvemshop.status_type_group("status")} AS status_type,
+  ${nuvemshop.order_status_type("status")} AS status_type,
   status AS status_type_detail,     
   storefront AS point_of_sale, -- Dooca não guarda outros parâmteros aqui?
 
@@ -34,6 +34,8 @@ SELECT
  -------------  payment -------------  
   STRUCT 
   (
+    ${nuvemshop.payment_status_type("payment_status")} AS status_type,
+    payment_status AS status_detail,
     JSON_VALUE (payment_details ,"$.method") AS method,
     JSON_VALUE (payment_details ,"$.credit_card_company") AS method_detail
   )

@@ -1,0 +1,75 @@
+--------------------------------------------------------------------------------------------------
+  -- Cria uma view da tabela que contém as informações de tráfego do Google Analytics:
+  --  - tira os registros duplicados 
+  --  - cria a tabela vazia se ela não existir (no caso do cliente não ter feito a integração)
+--------------------------------------------------------------------------------------------------
+
+config {
+    type: "view",
+    schema: "staging",
+    description: "Informnações de tráfego do Google Analytics por dia",
+    tags: ['1-general'],
+    assertions: {
+      uniqueKey: ["date", "sessionMedium", "sessionSource", "sessionCampaignName", "sessionSourcePlatform"],
+      nonNull: ["date"]
+    }
+}
+
+-- Cria a tabela vazia, se ela não existir (caso o cliente não tenha feito a integração com o GA)
+pre_operations {
+  CREATE TABLE IF NOT EXISTS ${ref('raw_ga_custom_traffic')} (
+    date STRING,
+    sessions INTEGER,
+    property_id STRING,
+    sessionMedium STRING,
+    sessionSource STRING,
+    sessionCampaignName STRING,
+    sessionSourcePlatform STRING,
+    engagedSessions INTEGER,
+    totalUsers  INTEGER,
+    newUsers  INTEGER,
+    ecommercePurchases INTEGER,
+    userEngagementDuration  INTEGER,
+    totalRevenue FLOAT64
+  )
+}
+
+
+WITH deduplicated AS (
+  SELECT *, 
+    ROW_NUMBER() OVER (PARTITION BY 
+         date, 
+         sessionMedium, 
+         sessionSource, 
+         sessionCampaignName, 
+         sessionSourcePlatform 
+         ORDER BY _airbyte_extracted_at DESC
+    ) AS row_num
+
+  FROM ${ref('raw_ga_custom_traffic')}
+)
+
+-- Seleciona as sessões, ajustando foramtos e de-duplicando
+SELECT
+  DATE(PARSE_TIMESTAMP('%Y%m%d', date, 'America/Sao_Paulo')) as date,
+  sessionMedium,
+  sessionSource,
+  sessionSource || " / " || sessionMedium AS sessionSourceMedium,
+  sessionCampaignName,
+  sessionSourcePlatform,
+  MAX (sessions) AS sessions,
+  MAX (engagedSessions) AS engagedSessions,
+  MAX (totalUsers) AS totalUsers,
+  MAX (newUsers) AS newUsers,
+  MAX (ecommercePurchases) AS ecommercePurchases,
+  MAX (userEngagementDuration) as userEngagementDuration,
+  MAX (totalRevenue) as totalRevenue
+FROM
+  deduplicated
+WHERE
+  row_num = 1
+GROUP BY
+   1, 2, 3, 4, 5, 6
+
+
+

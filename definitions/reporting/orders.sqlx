@@ -8,19 +8,13 @@ config {
       partitionBy: "DATE(creation_date)"
     },
     
-    columns: {
-        order_id: "Id único do pedido",
-        creation_date: "Data em que o pedido foi feito",
-        update_date: "Última atualização",
-        payment: {
-          columns: {
-            method: "Método de pagamento"
-          }
-        }
-    },
     assertions: {
       uniqueKey: ["order_id"],
-      nonNull: ["order_id", "creation_date", "value.total"]
+      nonNull: ["order_id", "creation_date", "value.total", "status_type"],
+      rowConditions: [
+        'status_type IN ("Confirmado", "Cancelado", "Pendente", "Outros")',
+        'payment.status_type IN ("Confirmado", "Cancelado", "Pendente", "Outros")'
+      ]
     }
 }
 

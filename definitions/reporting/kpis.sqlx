@@ -23,6 +23,7 @@ SELECT
   DATE(creation_date) AS date_kpi,
   COUNT (*) AS orders,
   COUNTIF(status_type = 'Cancelado') AS orders_cancelled,
+  
   SUM (quantity_variety_items) AS quantity_variety_items,
   SUM (quantity_items) AS quantity_items,
   SUM (value.total) AS revenue_total,
@@ -82,6 +83,20 @@ ga_events_kpis AS (
     date
 ),
 
+-- KPIs da tabela do GA de tráfego 
+ga_traffic_kpis AS (
+  SELECT
+    date as date_kpi,
+    SUM (sessions) AS sessions,
+    SUM (engagedSessions) AS engagedSessions,
+    SUM (totalUsers) AS totalUsers,
+    SUM (newUsers) AS newUsers
+  FROM
+    ${ref("stg_ga_traffic")}
+  GROUP BY
+    date
+),
+
 -------------------------------------------------------------------
 -- JUNTA AS DATAS
 unified_dates AS (
@@ -92,9 +107,9 @@ unified_dates AS (
   SELECT date_kpi FROM ga_session_kpis
   UNION DISTINCT
   SELECT date_kpi FROM ga_events_kpis
+  UNION DISTINCT
+  SELECT date_kpi FROM ga_traffic_kpis
 )
-
-
 
 
 --===============================================================================
@@ -131,11 +146,17 @@ SELECT
   CAST(ga_ev.site_event_add_shipping_info AS FLOAT64 ) AS site_event_add_shipping_info,
   CAST(ga_ev.site_event_add_payment_info AS FLOAT64 ) AS site_event_add_payment_info,
 
+  CAST (ga_tf.sessions AS FLOAT64) AS site_sessions,
+  CAST (ga_tf.engagedSessions AS FLOAT64) AS site_engaged_sessions,
+  CAST (ga_tf.totalUsers AS FLOAT64) AS site_total_users,
+  CAST (ga_tf.newUsers AS FLOAT64) AS site_new_users,
+
 FROM unified_dates ud
 LEFT JOIN orders_kpis o ON ud.date_kpi = o.date_kpi
 LEFT JOIN goals_kpis g ON ud.date_kpi = g.date_kpi
 LEFT JOIN ga_session_kpis ga_s ON ud.date_kpi = ga_s.date_kpi
 LEFT JOIN ga_events_kpis ga_ev ON ud.date_kpi = ga_ev.date_kpi
+LEFT JOIN ga_traffic_kpis ga_tf ON ud.date_kpi = ga_tf.date_kpi
 
 
 
