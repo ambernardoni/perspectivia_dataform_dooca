@@ -1,0 +1,11 @@
+config {
+    type: "table",
+    schema: "reporting",
+    description: "dados de tráfego do site",
+    tags: ['1-general']
+}
+
+SELECT
+  *
+FROM
+  ${ref("stg_ga_traffic")} 

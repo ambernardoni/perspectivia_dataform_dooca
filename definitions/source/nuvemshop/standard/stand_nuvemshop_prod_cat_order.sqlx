@@ -9,7 +9,7 @@ config {
   -- e já prepara no formato certo para fazer parte dos pedidos depois como um ARRAY de STRUCT da tabela Orders
   -- o que tiver de informação aqui será inserida o array de itens dentro da tabela "Orders"
 SELECT
-  SAFE_CAST(O.id AS STRING) AS order_id,
+  SAFE_CAST(O.number AS STRING) AS order_id,
   -- Dados do produto
   prod_cat.product_id AS  product_id,
   prod_cat.product_name AS  product_name,

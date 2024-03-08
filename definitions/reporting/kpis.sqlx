@@ -23,6 +23,7 @@ SELECT
   DATE(creation_date) AS date_kpi,
   COUNT (*) AS orders,
   COUNTIF(status_type = 'Cancelado') AS orders_cancelled,
+  
   SUM (quantity_variety_items) AS quantity_variety_items,
   SUM (quantity_items) AS quantity_items,
   SUM (value.total) AS revenue_total,

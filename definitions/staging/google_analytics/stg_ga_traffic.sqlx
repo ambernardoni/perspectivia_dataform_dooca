@@ -34,11 +34,27 @@ pre_operations {
   )
 }
 
+
+WITH deduplicated AS (
+  SELECT *, 
+    ROW_NUMBER() OVER (PARTITION BY 
+         date, 
+         sessionMedium, 
+         sessionSource, 
+         sessionCampaignName, 
+         sessionSourcePlatform 
+         ORDER BY _airbyte_extracted_at DESC
+    ) AS row_num
+
+  FROM ${ref('raw_ga_custom_traffic')}
+)
+
 -- Seleciona as sessões, ajustando foramtos e de-duplicando
 SELECT
   DATE(PARSE_TIMESTAMP('%Y%m%d', date, 'America/Sao_Paulo')) as date,
   sessionMedium,
   sessionSource,
+  sessionSource || " / " || sessionMedium AS sessionSourceMedium,
   sessionCampaignName,
   sessionSourcePlatform,
   MAX (sessions) AS sessions,
@@ -49,9 +65,11 @@ SELECT
   MAX (userEngagementDuration) as userEngagementDuration,
   MAX (totalRevenue) as totalRevenue
 FROM
-  ${ref('raw_ga_custom_traffic')}
+  deduplicated
+WHERE
+  row_num = 1
 GROUP BY
-   1, 2, 3, 4, 5
+   1, 2, 3, 4, 5, 6
 
 
 
