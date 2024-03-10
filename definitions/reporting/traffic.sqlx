@@ -5,7 +5,34 @@ config {
     tags: ['1-general']
 }
 
+WITH source_medium_order AS
+  (
+  SELECT
+    sessionSourceMedium,
+    SUM (totalRevenue) AS revenue,
+    RANK () OVER (ORDER BY SUM (totalRevenue) DESC) AS revenue_order,
+    RANK () OVER (ORDER BY SUM (totalRevenue) DESC) || ". " || sessionSourceMedium AS sessionSourceMediumRanked
+  FROM
+    ${ref("stg_ga_traffic")}
+  WHERE 
+    date > DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
+  GROUP BY
+    1
+  ORDER BY
+    revenue_order 
+) 
+
+
 SELECT
-  *
+  T.*,
+  O.revenue_order,
+  O.sessionSourceMediumRanked
 FROM
-  ${ref("stg_ga_traffic")} 
+  ${ref("stg_ga_traffic")} T
+  LEFT JOIN source_medium_order O
+  ON T.sessionSourceMedium = O.sessionSourceMedium
+
+ORDER BY
+    O.revenue_order
+
+

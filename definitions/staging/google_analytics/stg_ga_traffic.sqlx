@@ -18,6 +18,7 @@ config {
 -- Cria a tabela vazia, se ela não existir (caso o cliente não tenha feito a integração com o GA)
 pre_operations {
   CREATE TABLE IF NOT EXISTS ${ref('raw_ga_custom_traffic')} (
+    _airbyte_extracted_at TIMESTAMP,
     date STRING,
     sessions INTEGER,
     property_id STRING,
