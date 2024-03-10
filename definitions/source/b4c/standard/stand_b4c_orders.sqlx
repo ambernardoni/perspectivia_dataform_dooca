@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------------------------
   -- Converte as informações no formato da plataforma para o formato da PERSPECTIVIA
-  -- A maior parte da lógica de transformação está aqui.
+  -- A maior parte da lógica de transformação de formatos está aqui.
   -- DONWSTREAM: Essa view será usada pelo processamento geral (independente de plataforma]
 --------------------------------------------------------------------------------------------------
 
@@ -16,11 +16,10 @@ SELECT
   SAFE_CAST(codigo AS STRING) AS order_id,
   SAFE_CAST(data_criacao AS TIMESTAMP) AS creation_date,
   SAFE_CAST(data_criacao AS TIMESTAMP) AS update_date,   
-  "order" AS order_type,  
-  "order" AS order_type_detail,  
+ 
   ${b4c.order_status_type("descricao_status")} AS status_type,
   descricao_status AS status_type_detail,
-  canal AS point_of_sale,   -- Normalizar aqui?
+  canal AS point_of_sale,
 
   -------------  value ---------------
   STRUCT ( 

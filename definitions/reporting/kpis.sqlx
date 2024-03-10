@@ -7,9 +7,14 @@ config {
     schema: "reporting",
     description: "Principais KPIs do ecommerce, dia a dia",
     tags: ['1-general'],
+
     assertions: {
       uniqueKey: ["date_kpi"],
-      nonNull: ["date_kpi"]
+      nonNull: ["date_kpi"],
+      rowConditions: [
+        'ABS (orders_captated - (orders_cancelled + orders_pending + orders)) <3',
+        'ABS (revenue_total_captated - (revenue_total + revenue_total_cancelled + revenue_total_pending)) <3'
+      ]
     }
 }
 
@@ -21,15 +26,21 @@ WITH
   orders_kpis AS (
 SELECT
   DATE(creation_date) AS date_kpi,
-  COUNT (*) AS orders,
-  COUNTIF(status_type = 'Cancelado') AS orders_cancelled,
-  
-  SUM (quantity_variety_items) AS quantity_variety_items,
-  SUM (quantity_items) AS quantity_items,
-  SUM (value.total) AS revenue_total,
-  SUM (value.items) AS revenue_items,
-  SUM (value.discounts) AS revenue_discounts,
-  SUM (value.shipping) AS revenue_shipping,
+  -- orders
+  COUNTIF(status_type_category = 'Aprovado') AS orders,
+  COUNT (*) AS orders_captated,
+  COUNTIF(status_type_category = 'Cancelado') AS orders_cancelled,
+  COUNTIF(status_type_category = 'Pendente') AS orders_pending,
+
+  SUM (IF(status_type_category = 'Aprovado', quantity_variety_items,0)) AS quantity_variety_items,
+  SUM (IF(status_type_category = 'Aprovado', quantity_items,0)) AS quantity_items,
+  -- revenue
+  SUM (IF(status_type_category = 'Aprovado', value.total,0)) AS revenue_total,
+  SUM (value.total) AS revenue_total_captated,
+  SUM (IF(status_type_category = 'Cancelado', value.total,0)) AS revenue_total_cancelled,
+  SUM (IF(status_type_category = 'Pendente', value.total,0)) AS revenue_total_pending,
+  SUM (IF(status_type_category = 'Aprovado', value.discounts,0)) AS revenue_discounts,
+  SUM (IF(status_type_category = 'Aprovado', value.shipping,0)) AS revenue_shipping,
 
   -- recompra
   COUNTIF(customer_stats.days_since_last_order <= 30) AS orders_repurchase_30_days,
@@ -43,7 +54,6 @@ FROM
 GROUP BY
   date_kpi
   ),
-
 
 -------------------------------------------------------------------
 -- METAS
@@ -123,15 +133,22 @@ unified_dates AS (
 SELECT
   ud.date_kpi AS date_kpi,
   EXTRACT(DAYOFWEEK FROM ud.date_kpi) AS weekday,
+
   CAST( o.orders AS FLOAT64 ) AS orders,
+  CAST( o.orders_captated AS FLOAT64 ) AS orders_captated,
+  CAST( o.orders_pending AS FLOAT64 ) AS orders_pending,
   CAST( o.orders_cancelled AS FLOAT64 ) AS orders_cancelled,
-  CAST( ga_s.sessions AS FLOAT64 ) AS sessions,
+
   CAST( o.quantity_variety_items AS FLOAT64 ) AS quantity_variety_items,
   CAST( o.quantity_items AS FLOAT64 ) AS quantity_items ,
+
   CAST( o.revenue_total AS FLOAT64 ) AS revenue_total,
-  CAST( o.revenue_items AS FLOAT64 ) AS revenue_items,
+  CAST( o.revenue_total_captated AS FLOAT64 ) AS revenue_total_captated,
+  CAST( o.revenue_total_pending AS FLOAT64 ) AS revenue_total_pending,
+  CAST( o.revenue_total_cancelled AS FLOAT64 ) AS revenue_total_cancelled,
   CAST( o.revenue_discounts AS FLOAT64 ) AS revenue_discounts ,
   CAST( o.revenue_shipping AS FLOAT64 ) AS revenue_shipping ,
+
   CAST( g.goal_revenue AS FLOAT64 ) AS goal_revenue,
 
   CAST( o.orders_repurchase_30_days AS FLOAT64 ) AS orders_repurchase_30_days,
@@ -141,6 +158,7 @@ SELECT
   CAST( o.orders_repurchase_180_days AS FLOAT64 ) AS orders_repurchase_180_days,
   CAST( o.orders_repurchase_365_days AS FLOAT64 ) AS orders_repurchase_365_days,
 
+  CAST( ga_s.sessions AS FLOAT64 ) AS sessions,
   CAST(ga_ev.site_event_add_to_cart AS FLOAT64 ) AS site_event_add_to_cart,
   CAST(ga_ev.site_event_begin_checkout AS FLOAT64 ) AS site_event_begin_checkout,
   CAST(ga_ev.site_event_add_shipping_info AS FLOAT64 ) AS site_event_add_shipping_info,
