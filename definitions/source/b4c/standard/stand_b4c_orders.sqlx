@@ -19,7 +19,8 @@ SELECT
  
   ${b4c.order_status_type("descricao_status")} AS status_type,
   descricao_status AS status_type_detail,
-  canal AS point_of_sale,
+  canal AS point_of_sale, 
+  
 
   -------------  value ---------------
   STRUCT ( 
