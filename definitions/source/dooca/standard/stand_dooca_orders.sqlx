@@ -15,8 +15,8 @@ config {
 SELECT
   _airbyte_extracted_at,
   SAFE_CAST(id AS STRING) AS order_id,
-  SAFE_CAST(created_at AS TIMESTAMP) AS creation_date,
-  SAFE_CAST(updated_at AS TIMESTAMP) AS update_date,
+  SAFE_CAST(created_at AS DATETIME) AS creation_date,
+  SAFE_CAST(updated_at AS DATETIME) AS update_date,
 
   -- Status
   ${dooca.order_status_type("status")} AS status_type,
