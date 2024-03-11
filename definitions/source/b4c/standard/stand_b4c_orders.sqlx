@@ -14,8 +14,8 @@ config {
 SELECT
   _airbyte_extracted_at,
   SAFE_CAST(codigo AS STRING) AS order_id,
-  SAFE_CAST(data_criacao AS TIMESTAMP) AS creation_date,
-  SAFE_CAST(data_criacao AS TIMESTAMP) AS update_date,   
+  SAFE_CAST(data_criacao AS DATETIME) AS creation_date,
+  SAFE_CAST(data_criacao AS DATETIME) AS update_date,   
  
   ${b4c.order_status_type("descricao_status")} AS status_type,
   descricao_status AS status_type_detail,

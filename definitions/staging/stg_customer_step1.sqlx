@@ -11,7 +11,7 @@ SELECT
   customer.email,
   customer.phone,
   COUNT (DISTINCT order_id) as frequency,
-  TIMESTAMP_DIFF(CURRENT_TIMESTAMP, MAX (creation_date),  DAY) As recency,
+  DATETIME_DIFF(CURRENT_DATETIME(), MAX (creation_date),  DAY) As recency,
   SUM (value.total) AS monetary
 FROM
   ${ref("orders")} O

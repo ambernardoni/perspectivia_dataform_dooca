@@ -16,8 +16,12 @@ config {
 SELECT
   _airbyte_extracted_at,
   SAFE_CAST(number AS STRING) AS order_id,
-  SAFE_CAST(created_at AS TIMESTAMP) AS creation_date,
-  SAFE_CAST(updated_at AS TIMESTAMP) AS update_date,
+--  SAFE_CAST(created_at AS TIMESTAMP) AS creation_date,
+--  SAFE_CAST(updated_at AS TIMESTAMP) AS update_date,
+
+  -- IMPORTANTE AQUI - Se o formato for TIMESTAMP ou outro formado de data fora do fuso Brasil, trazer para o fuso Brasil
+  DATETIME(SAFE_CAST(created_at AS TIMESTAMP), "America/Sao_Paulo") AS creation_date,
+  DATETIME(SAFE_CAST(updated_at AS TIMESTAMP), "America/Sao_Paulo") AS update_date,
 
   -- Status
   ${nuvemshop.order_status_type("status")} AS status_type,
