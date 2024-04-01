@@ -44,33 +44,37 @@ config {
 WITH revenue_and_goals AS (
 SELECT
   SUM(CASE
-    WHEN date_kpi >= DATE_TRUNC(CURRENT_DATE(), YEAR) AND date_kpi < CURRENT_DATE() THEN revenue_total
+    WHEN date_kpi >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), YEAR) 
+     AND date_kpi <= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY) THEN revenue_total
     ELSE 0 END
   ) AS revenue_ytd,
 
   SUM(CASE
-    WHEN date_kpi >= DATE_TRUNC(CURRENT_DATE(), MONTH) AND date_kpi < CURRENT_DATE() THEN revenue_total
+    WHEN date_kpi >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), MONTH) 
+     AND date_kpi <= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY) THEN revenue_total
     ELSE 0 END 
   ) AS revenue_mtd,
 
   SUM( CASE
-    WHEN date_kpi >= DATE_TRUNC(CURRENT_DATE(), YEAR) AND date_kpi < CURRENT_DATE() THEN goal_revenue
+    WHEN date_kpi >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), YEAR) 
+     AND date_kpi <= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY) THEN goal_revenue
     ELSE 0
   END ) AS revenue_goal_ytd,
 
   SUM( CASE
-      WHEN date_kpi >= DATE_TRUNC(CURRENT_DATE(), MONTH) AND date_kpi < CURRENT_DATE() THEN goal_revenue
+      WHEN date_kpi >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), MONTH) 
+       AND date_kpi <= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY) THEN goal_revenue
       ELSE 0  END
   ) AS revenue_goal_mtd,
 
   SUM( CASE
-    WHEN EXTRACT(YEAR FROM date_kpi) = EXTRACT(YEAR FROM CURRENT_DATE()) THEN goal_revenue
+    WHEN EXTRACT(YEAR FROM date_kpi) = EXTRACT(YEAR FROM DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)) THEN goal_revenue
     ELSE 0 END
   ) AS revenue_goal_current_year,
 
   SUM( CASE
-      WHEN EXTRACT(YEAR FROM date_kpi) = EXTRACT(YEAR FROM CURRENT_DATE()) 
-       AND EXTRACT(MONTH FROM date_kpi) = EXTRACT(MONTH FROM CURRENT_DATE()) THEN goal_revenue
+      WHEN EXTRACT(YEAR FROM date_kpi) = EXTRACT(YEAR FROM DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)) 
+       AND EXTRACT(MONTH FROM date_kpi) = EXTRACT(MONTH FROM DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)) THEN goal_revenue
     ELSE 0 END
   ) AS revenue_goal_current_month
 
