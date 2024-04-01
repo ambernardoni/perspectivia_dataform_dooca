@@ -6,10 +6,9 @@
   "assertionSchema": "dataform_assertions",
   "schemaSuffix": "ppdev",
 
-
   "vars": {
-    "rawDataset" : "raw_tfkennedy",
-    "ecommPlatName" : "b4c"
+    "rawDataset" : "raw_tskyhill",
+    "ecommPlatName" : "nuvemshop"
   }
 
 }
