@@ -95,10 +95,10 @@ SELECT
 ---------------------  customer_stats   
   STRUCT ( 
     order_id,
-    MIN(creation_date) OVER (PARTITION BY customer.customer_id) AS first_order_date,
-    LAG(creation_date) OVER (PARTITION BY customer.customer_id ORDER BY creation_date) AS previous_order_date,
-    DATE_DIFF(creation_date, LAG(creation_date) OVER (PARTITION BY customer.customer_id ORDER BY creation_date), DAY) AS days_since_last_order,
-    ROW_NUMBER() OVER (PARTITION BY customer.customer_id ORDER BY creation_date) - 1 AS number_of_previous_orders
+    MIN(CASE WHEN (payment.status_type = "Aprovado" AND status_type <> "Cancelado") THEN creation_date END) OVER (PARTITION BY customer.customer_id) AS first_order_date,
+    LAG(CASE WHEN (payment.status_type = "Aprovado" AND status_type <> "Cancelado") THEN creation_date END) OVER (PARTITION BY customer.customer_id ORDER BY creation_date) AS previous_order_date,
+    DATE_DIFF(creation_date, LAG(CASE WHEN (payment.status_type = "Aprovado" AND status_type <> "Cancelado") THEN creation_date END) OVER (PARTITION BY customer.customer_id ORDER BY creation_date), DAY) AS days_since_last_order,
+    COUNT(CASE WHEN (payment.status_type = "Aprovado" AND status_type <> "Cancelado") THEN order_id END) OVER (PARTITION BY customer.customer_id ORDER BY creation_date) - 1 AS number_of_previous_orders  
   ) AS customer_stats,
 
 

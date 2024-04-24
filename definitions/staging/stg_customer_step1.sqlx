@@ -15,5 +15,7 @@ SELECT
   SUM (value.total) AS monetary
 FROM
   ${ref("orders")} O
+WHERE
+  status_type_category = 'Aprovado'
 GROUP BY 1, 2, 3, 4
 

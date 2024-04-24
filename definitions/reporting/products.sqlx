@@ -30,4 +30,6 @@ SELECT
   ) as item
 FROM
   ${ref("orders")} AS O, UNNEST (items) AS it
+WHERE
+  status_type_category = 'Aprovado'
 

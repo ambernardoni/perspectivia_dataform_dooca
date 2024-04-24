@@ -16,8 +16,8 @@ SELECT
   prod_cat.category_name AS  category_name,
   prod_cat.category_id AS  category_id,
   SAFE_CAST(JSON_VALUE(json_item, "$.sku") AS STRING) AS  product_sku,
-  "" AS  subcategory_id,
-  "" AS  subcategory_name,
+  prod_cat.subcategory_id AS  subcategory_id,
+  prod_cat.subcategory_name AS  subcategory_name,
 
   -- Dados do pedido
   SAFE_CAST(JSON_VALUE(json_item, "$.quantity") AS INT64) AS quantity,
