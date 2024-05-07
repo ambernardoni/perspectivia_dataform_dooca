@@ -10,6 +10,7 @@ config {
 }
 
 SELECT
+  '${dataform.projectConfig.schemaSuffix}' as tenant_id,
   *,
   CASE 
     WHEN previous_period_value = 0 THEN NULL 

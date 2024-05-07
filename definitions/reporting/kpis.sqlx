@@ -131,6 +131,7 @@ unified_dates AS (
 --     Não Usamos struct para agrupar campos parfecidos
 
 SELECT
+  '${dataform.projectConfig.schemaSuffix}' as tenant_id,
   ud.date_kpi AS date_kpi,
   EXTRACT(DAYOFWEEK FROM ud.date_kpi) AS weekday,
 

@@ -40,6 +40,7 @@ quartiles AS (
 
 -- == Considera somente os indicadores do "interquartile range|"
 SELECT
+  '${dataform.projectConfig.schemaSuffix}' as tenant_id,
  f.weekday as weekday_avg,
   -- orders
   AVG(IF(f.orders BETWEEN q.Q1_kpi1 - 1.5 * (q.Q3_kpi1 - q.Q1_kpi1) 

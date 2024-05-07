@@ -12,6 +12,7 @@ config {
 }
 
 SELECT
+ '${dataform.projectConfig.schemaSuffix}' as tenant_id,
  '7 dias vs 7 anteriores' AS period_name,
   1 AS visual_period_order, -- a ordem em que vai aparecer na tela
   DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) as current_period_end,
@@ -20,6 +21,7 @@ SELECT
   DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 14 DAY) as previous_period_start,
 
 UNION ALL SELECT
+ '${dataform.projectConfig.schemaSuffix}' as tenant_id,
  '14 dias vs 14 anteriores' AS period_name,
   2 AS visual_period_order,
   DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) as current_period_start,
@@ -28,6 +30,7 @@ UNION ALL SELECT
   DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 28 DAY) as previous_period_end,
 
 UNION ALL SELECT
+ '${dataform.projectConfig.schemaSuffix}' as tenant_id,
  '28 dias vs 28 anteriores' AS period_name,
   3 AS visual_period_order,
   DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) as current_period_start,
@@ -36,6 +39,7 @@ UNION ALL SELECT
   DATE_SUB (CURRENT_DATE('America/Sao_Paulo'), INTERVAL 56 DAY) as previous_period_end,
 
 UNION ALL SELECT 
+ '${dataform.projectConfig.schemaSuffix}' as tenant_id,
   'Este mês vs mês passado' AS period_name,
   4 AS visual_period_order, -- a ordem em que vai aparecer na tela
   DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) AS current_period_end, -- Yesterday
@@ -44,6 +48,7 @@ UNION ALL SELECT
   DATE_TRUNC(DATE_SUB(DATE_TRUNC(CURRENT_DATE('America/Sao_Paulo'), MONTH), INTERVAL 1 MONTH), MONTH) AS previous_period_start -- Start of last month
 
 UNION ALL SELECT
+ '${dataform.projectConfig.schemaSuffix}' as tenant_id,
   'Este ano vs ano passado' AS period_name,
   5 AS visual_period_order, -- a ordem em que vai aparecer na tela
   DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) AS current_period_end, -- Yesterday

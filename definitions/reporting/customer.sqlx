@@ -6,6 +6,7 @@ config {
 }
 
 SELECT
+  '${dataform.projectConfig.schemaSuffix}' as tenant_id,
   *,
   NTILE(5) OVER (ORDER BY recency DESC) AS recency_score,
   NTILE(5) OVER (ORDER BY frequency) AS frequency_score,

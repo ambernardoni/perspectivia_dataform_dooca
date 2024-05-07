@@ -24,6 +24,7 @@ WITH source_medium_order AS
 
 
 SELECT
+ '${dataform.projectConfig.schemaSuffix}' as tenant_id,
   T.*,
   O.revenue_order,
   O.sessionSourceMediumRanked
