@@ -61,6 +61,7 @@ WITH
 ----------------------- MONTA A TABELA DE PEDIDOS ----------------------
 ----------- Pega os dados padronizados todos
 SELECT
+  '${dataform.projectConfig.schemaSuffix}' as tenant_id,
   *,
 
 ----------- Monta um status geral do pedido

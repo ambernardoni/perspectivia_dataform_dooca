@@ -85,6 +85,7 @@ FROM
 --------------------------------------------------------------------------------
 -- Retorna os valores e os percentuais de atingimento
 SELECT 
+  '${dataform.projectConfig.schemaSuffix}' as tenant_id,
   *,
 -- Percentuais de atingimento
   COALESCE(SAFE_DIVIDE(revenue_ytd, revenue_goal_ytd), 0) AS revenue_goal_ytd_percent,

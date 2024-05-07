@@ -6,6 +6,7 @@ config {
 }
 
 SELECT
+  '${dataform.projectConfig.schemaSuffix}' as tenant_id,
   O.order_id,
   creation_date,
   status_type,

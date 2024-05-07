@@ -6,7 +6,11 @@ config {
 }
 
 SELECT 
-  *
+  k.*, 
+  a.weekday_avg,
+  a.orders_avg,
+  a.sessions_avg,
+  a.revenue_total_avg
 FROM
   ${ref("kpis")} k
   LEFT JOIN
