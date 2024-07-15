@@ -7,8 +7,8 @@
   "schemaSuffix": "ppdev",
 
   "vars": {
-    "rawDataset" : "raw_tskyhill",
-    "ecommPlatName" : "nuvemshop"
+    "rawDataset" : "raw_tdufaux",
+    "ecommPlatName" : "tray"
   }
 
 }

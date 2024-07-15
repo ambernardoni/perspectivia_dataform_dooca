@@ -1,0 +1,34 @@
+config {
+    type: "view",
+    schema: "standard",
+    description: "Cleaned up version of orders",
+    tags: ['tray']
+}
+
+  -- Este script extrai as informações de produtos comprados,
+  -- e já prepara no formato certo para fazer parte dos pedidos depois como um ARRAY de STRUCT da tabela Orders
+  -- o que tiver de informação aqui será inserida o array de itens dentro da tabela "Orders"
+
+  SELECT
+    JSON_VALUE(P.id) AS test,
+    O.id as order_id,
+    prod_cat.product_id AS  product_id,
+    prod_cat.product_name AS  product_name,
+    prod_cat.category_name AS  category_name,
+    prod_cat.category_id AS  category_id,
+    "" AS  product_sku,
+    prod_cat.subcategory_id AS  subcategory_id,
+    prod_cat.subcategory_name AS  subcategory_name,
+
+  -- Dados do pedido
+  1 AS quantity,       -- ### TEMP Considerando uma unidade somente
+  1 AS price_unit,     -- TEMP - preço da tablea de produto, não da venda
+  0 as price_discount,
+  1 AS price_total     -- TEMP Considerando uma unidade somente
+
+  FROM
+      ${ref("raw_tray_Orders")} O,
+      UNNEST(JSON_EXTRACT_ARRAY(ProductsSold)) AS P
+      LEFT JOIN ${ref("stand_tray_prod_cat")} prod_cat
+      -- Critério do join
+      ON JSON_VALUE(P.id) = prod_cat.product_id

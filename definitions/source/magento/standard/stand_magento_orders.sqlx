@@ -1,0 +1,23 @@
+--------------------------------------------------------------------------------------------------
+  -- Converte as informações no formato da plataforma para o formato da PERSPECTIVIA
+  -- A maior parte da lógica de transformação de formatos está aqui.
+  -- DONWSTREAM: Essa view será usada pelo processamento geral (independente de plataforma]
+--------------------------------------------------------------------------------------------------
+
+
+config {
+    type: "view",
+    schema: "standard",
+    description: "Cleaned up version of orders",
+    tags: ['magento'],
+    disabled: false
+}
+
+SELECT
+  _airbyte_extracted_at,
+  SAFE_CAST(entity_id AS STRING) AS order_id,
+  DATETIME(SAFE_CAST(created_at AS TIMESTAMP), "America/Sao_Paulo") AS creation_date,
+  DATETIME(SAFE_CAST(updated_at AS TIMESTAMP), "America/Sao_Paulo") AS update_date,
+
+FROM
+  ${ref("raw_magento_Orders")} O 

@@ -1,0 +1,20 @@
+config {
+    type: "view",
+    schema: "standard",
+    description: "Tabela contendo a lista de produtos da loja e suas categorias",
+    tags: ['tray']
+}
+
+SELECT 
+  CAST (prod.id AS STRING) AS product_id,
+  prod.name as product_name,
+  CAST (cat.id_level0 AS STRING) AS category_id,
+  cat.name_level0 AS category_name,
+  CAST (cat.id_level1 AS STRING) AS subcategory_id,
+  cat.name_level1 AS subcategory_name,
+FROM
+  ${ref('raw_tray_Products')} prod
+LEFT JOIN
+  ${ref("stg_tray_category_tree")} cat
+ON
+  prod.category_id = cat.id

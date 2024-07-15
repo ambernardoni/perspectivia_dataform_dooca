@@ -1,0 +1,66 @@
+config {
+    type: "view",
+    schema: "standard",
+    description: "Tabela contendo a estrutura de categorias",
+    tags: ['tray']
+}
+
+WITH RECURSIVE CategoryPath AS (
+    -- Base case: Select all root categories (those with no parent)
+    SELECT 
+        id, 
+        name, 
+        parent_id, 
+        id AS id_level0, 
+        name AS name_level0, 
+        CAST(NULL AS STRING) AS id_level1, 
+        CAST(NULL AS STRING) AS name_level1, 
+        CAST(NULL AS STRING) AS id_level2, 
+        CAST(NULL AS STRING) AS name_level2,
+        0 AS Level
+    FROM ${ref('raw_tray_Categories')}
+    WHERE parent_id = ""
+
+    UNION ALL
+
+    -- Recursive step: Join with the CTE to find children and update level-specific data
+    SELECT 
+        c.id, 
+        c.name, 
+        c.parent_id, 
+        cp.id_level0,
+        cp.name_level0,
+        CASE 
+            WHEN cp.Level = 0 THEN c.id 
+            ELSE cp.id_level1 
+        END AS id_level1,
+        CASE 
+            WHEN cp.Level = 0 THEN c.name
+            ELSE cp.name_level1 
+        END AS name_level1,
+        CASE 
+            WHEN cp.Level = 1 THEN c.id
+            ELSE cp.id_level2 
+        END AS id_level2,
+        CASE 
+            WHEN cp.Level = 1 THEN c.name
+            ELSE cp.name_level2 
+        END AS name_level2,
+        cp.Level + 1
+    FROM ${ref('raw_tray_Categories')} c
+    INNER JOIN CategoryPath cp ON c.parent_id = cp.id
+    WHERE cp.Level < 2  -- Limit to 3 levels (0, 1, 2)
+)
+
+SELECT 
+    id, 
+    name, 
+    parent_id,  
+    id_level0, 
+    name_level0, 
+    id_level1, 
+    name_level1, 
+    id_level2, 
+    name_level2
+FROM CategoryPath
+
