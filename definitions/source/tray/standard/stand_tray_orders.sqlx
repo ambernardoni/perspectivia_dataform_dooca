@@ -1,0 +1,65 @@
+config {
+    type: "view",
+    schema: "standard",
+    description: "Cleaned up version of orders",
+    tags: ['tray'],
+    disabled: false
+}
+
+  --------------------------------------------------------------------------------------------------
+  -- Converte as informações no formato da plataforma para o formato da PERSPECTIVIA
+  -- A maior parte da lógica de transformação de formatos está aqui.
+  -- DONWSTREAM: Essa view será usada pelo processamento geral (independente de plataforma]
+  --------------------------------------------------------------------------------------------------
+SELECT
+  _airbyte_extracted_at,
+  SAFE_CAST(id AS STRING) AS order_id,
+  SAFE_CAST(date AS DATETIME) AS creation_date,
+  SAFE_CAST(modified AS DATETIME) AS update_date,
+
+  -- Status
+   ${tray.order_status_type("status")} AS status_type,
+  status AS status_type_detail,
+  point_sale AS point_of_sale,
+
+  -------------  value ---------------
+  STRUCT ( 
+      SAFE_CAST(total AS FLOAT64) AS total,
+      0 AS items, --#############
+      SAFE_CAST(discount AS FLOAT64) AS discounts,
+      SAFE_CAST(shipment_value AS FLOAT64) AS shipping,
+      SAFE_CAST(discount AS FLOAT64) AS tax 
+  ) AS value,
+
+  -------------  payment -------------
+  STRUCT
+  (
+   ${tray.order_status_type("status")} AS status_type,
+   status AS status_detail,
+   payment_form AS method,
+   payment_form AS method_detail
+  )
+  AS payment,
+
+  -------------  address -------------
+  STRUCT
+  (
+    "" AS shipping_zipcode,   --#####
+    "" AS shipping_city,      --#####
+    "" AS shipping_state,     --#####
+    "" AS shipping_country    --#####
+  )
+  AS address,
+
+  -------------  customer ------------
+  STRUCT
+  (
+     SAFE_CAST(customer_id AS STRING) AS  customer_id,
+     "" AS name,       --#####
+     "" AS doc_number, --#####
+     "" AS email,      --#####
+     "" AS phone       --#####
+  )
+  AS customer,
+FROM
+  ${ref("raw_tray_Orders")} O

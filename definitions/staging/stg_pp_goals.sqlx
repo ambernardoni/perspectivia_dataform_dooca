@@ -17,7 +17,7 @@ config {
 -- Cria a tabela vazia, se ela não existir (caso o cliente não tenha feito a integração com o GA)
 pre_operations {
   CREATE TABLE IF NOT EXISTS ${ref('pp_goals')} (
-    date_cresation Date,
+    date_creation Date,
     meta_faturamento FLOAT64,
     meta_pedidos FLOAT64
   )

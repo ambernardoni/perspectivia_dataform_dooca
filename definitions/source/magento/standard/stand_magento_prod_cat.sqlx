@@ -1,0 +1,19 @@
+config {
+    type: "view",
+    schema: "standard",
+    description: "Tabela contendo a lista de produtos da loja e suas categorias",
+    tags: ['magento']
+}
+
+SELECT
+  CAST (id AS STRING) AS product_id,
+  name AS product_name,
+ -- CAST (JSON_VALUE (categories[0], "$.id") AS STRING) AS category_id,
+  '2' AS category_id,
+ -- JSON_VALUE (categories[0], "$.name.pt") AS category_name,
+  'Laszlo' AS category_name,
+ -- CAST (JSON_VALUE (categories[1], "$.id") AS STRING) AS subcategory_id,
+  '2.1'  AS subcategory_id,
+  JSON_VALUE (categories[1], "$.name.pt") AS subcategory_name
+FROM
+  ${ref("raw_magento_Products")} prod

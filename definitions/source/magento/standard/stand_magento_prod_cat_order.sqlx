@@ -1,0 +1,38 @@
+config {
+    type: "view",
+    schema: "standard",
+    description: "Cleaned up version of orders",
+    tags: ['magento']
+}
+
+  -- Este script extrai as informações de produtos comprados,
+  -- e já prepara no formato certo para fazer parte dos pedidos depois como um ARRAY de STRUCT da tabela Orders
+  -- o que tiver de informação aqui será inserida o array de itens dentro da tabela "Orders"
+SELECT
+  SAFE_CAST(O.entity_id AS STRING) AS order_id,
+  -- Dados do produto
+  prod_cat.product_id AS  product_id,
+  SAFE_CAST(JSON_VALUE(json_item, "$.sku") AS STRING) AS  product_name,
+  prod_cat.category_name AS  category_name,
+  prod_cat.category_id AS  category_id,
+  SAFE_CAST(JSON_VALUE(json_item, "$.sku") AS STRING) AS  product_sku,
+  prod_cat.subcategory_id AS  subcategory_id,
+  prod_cat.subcategory_name AS  subcategory_name,
+
+  -- Dados do pedido
+  SAFE_CAST(JSON_VALUE(json_item, "$.quantity") AS INT64) AS quantity,
+  SAFE_CAST(JSON_VALUE(json_item, "$.price") AS FLOAT64) AS price_unit,
+  0 as price_discount,
+  (
+  SAFE_CAST(JSON_VALUE(json_item, "$.price") AS FLOAT64) *
+  SAFE_CAST(JSON_VALUE(json_item, "$.quantity") AS FLOAT64) 
+  ) AS price_total
+ 
+FROM
+  -- tabela de pedidos 0 items abertos
+  ${ref("raw_magento_Orders")} O,
+  UNNEST(JSON_EXTRACT_ARRAY(products, '$')) AS json_item
+  -- tabela de produos
+  LEFT JOIN ${ref("stand_nuvemshop_prod_cat")} prod_cat
+  -- Critério do join
+       ON SAFE_CAST(JSON_VALUE(json_item, "$.product_id") AS STRING) = prod_cat.product_id

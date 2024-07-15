@@ -1,5 +1,43 @@
 
 ==========================================================
+= Tray
+==========================================================
+Configurações para desenvolver Tray: 
+
+  "vars": {
+    "rawDataset" : "raw_tdufaux",
+    "ecommPlatName" : "tray"
+  }
+
+TAG nos scripts: tray
+
+EXECUTION: Tags
+  1-General
+  tray
+
+
+
+==========================================================
+=   MAGENTO
+==========================================================
+
+Configurações para desenvolver Magento: 
+
+No dataform.json:
+
+  "vars": {
+    "rawDataset" : "raw_tlaszlo",
+    "ecommPlatName" : "magento"
+  }
+
+TAG nos scripts: magento
+
+EXECUTION: Tags
+  1-General
+  magento
+
+
+==========================================================
 =   DOOCA
 ==========================================================
 
