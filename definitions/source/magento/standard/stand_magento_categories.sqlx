@@ -1,0 +1,56 @@
+config {
+    description: "Padronização da tabela de categorias",
+    type: "table",
+    schema: "standard",
+    columns: {
+        category_id: "Identificador único para a categoria - string ",
+        category_name: "Nome da categoria - string ",
+        category_parent_id: "Identificador da categoria pai- string ",
+        is_top_level: "Indica se a categoria é de nível superior - boolean"
+    },
+    tags: ['magento']
+}
+
+-- A estrutura da Magento é bem bizarra, um Json com as gategorias aninhadas...
+-- este script está deliberadamente ignorando o primeiro nível (na Laszlo era uma categoria geral da loja)
+-- talvez no futuro a gente tenha que arrumar isso...
+
+WITH RECURSIVE CategoryHierarchy AS (
+  -- Base case: select all top-level categories
+  SELECT
+    SAFE_CAST(JSON_EXTRACT_SCALAR(category, '$.id') AS STRING) AS category_id,
+    JSON_EXTRACT_SCALAR(category, '$.name') AS category_name,
+    SAFE_CAST(JSON_EXTRACT_SCALAR(category, '$.parent_id') AS STRING) AS category_parent_id,
+    TRUE AS is_top_level,
+    category AS category_json,  -- Store the entire category JSON
+    0 AS level
+  FROM
+    ${ref('raw_magento_Categories')},
+    UNNEST(JSON_EXTRACT_ARRAY(children_data)) AS category
+  WHERE
+    JSON_EXTRACT_SCALAR(category, '$.parent_id') = '2'
+
+  UNION ALL
+
+  -- Recursive case: select child categories up to 3 levels
+  SELECT
+    SAFE_CAST(JSON_EXTRACT_SCALAR(child, '$.id') AS STRING) AS category_id,
+    JSON_EXTRACT_SCALAR(child, '$.name') AS category_name,
+    SAFE_CAST(JSON_EXTRACT_SCALAR(child, '$.parent_id') AS STRING) AS category_parent_id,
+    FALSE AS is_top_level,
+    child AS category_json,  -- Store the entire child category JSON
+    ch.level + 1 AS level
+  FROM
+    CategoryHierarchy ch,
+    UNNEST(JSON_EXTRACT_ARRAY(ch.category_json, '$.children_data')) AS child
+  WHERE
+    ch.level < 2  -- This ensures we only go 3 levels deep (0, 1, 2)
+)
+
+SELECT 
+  SAFE_CAST (category_id AS STRING) AS category_id,
+  SAFE_CAST (category_name AS STRING) AS category_name, 
+  SAFE_CAST (category_parent_id AS STRING) AS category_parent_id,
+  is_top_level,
+FROM CategoryHierarchy
+ORDER BY level, category_parent_id, category_id

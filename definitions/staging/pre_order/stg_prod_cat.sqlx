@@ -1,0 +1,29 @@
+config {
+    description: "Tabela contendo a lista de produtos da loja e suas categorias",
+    type: "view",
+    schema: "staging",
+    tags: ['1-general','1.1-preorder']
+}
+
+SELECT 
+  product_id,
+  product_name,
+  prod.category_id,
+  category_name,
+  category_id_level0, 
+  category_name_level0, 
+  category_id_level1, 
+  category_name_level1, 
+  category_id_level2, 
+  category_name_level2,
+  category_id_level3, 
+  category_name_level3,
+  "" AS subcategory_id,
+  "" AS subcategory_name,
+FROM
+  ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_products")} prod
+LEFT JOIN
+  ${ref("stg_category_tree")} cat
+ON
+  prod.category_id = cat.category_id
+

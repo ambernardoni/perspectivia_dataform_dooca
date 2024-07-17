@@ -1,0 +1,26 @@
+config {
+    description: "Padronização da tabela de produtos por pedido",
+    schema: "standard",
+    type: "view",
+    columns: {
+        order_id: "Identificador único do pedido",
+        product_id: "Identificador único do produto",
+        quantity: "Quantidade do produto no pedido",
+        price_unit: "Preço unitário do produto",
+        price_discount: "Valor do desconto aplicado ao produto",
+        price_total: "Preço total do produto no pedido"
+    },
+    tags: ['tray']
+}
+
+  SELECT
+    O.id as order_id,
+    JSON_VALUE(P.id) AS product_id,
+    1 AS quantity,
+    1 AS price_unit,
+    0 as price_discount,
+    (1 * 1) AS price_total     -- price_unity * price_total
+
+  FROM
+      ${ref("raw_tray_Orders")} O,
+      UNNEST(JSON_EXTRACT_ARRAY(ProductsSold)) AS P

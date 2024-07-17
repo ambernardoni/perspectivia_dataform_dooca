@@ -7,8 +7,8 @@
   "schemaSuffix": "ppdev",
 
   "vars": {
-    "rawDataset" : "raw_tdufaux",
-    "ecommPlatName" : "tray"
+    "rawDataset" : "raw_tlaszlo",
+    "ecommPlatName" : "magento"
   }
 
 }
