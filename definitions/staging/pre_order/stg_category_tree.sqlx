@@ -1,0 +1,90 @@
+config {
+    description: "Tabelas dos múltiplos níveis de categorias",
+    type: "table",
+    schema: "staging",
+        columns: {
+        category_id: "Identificador único da categoria",
+        category_name: "Nome da categoria",
+        category_parent_id: "Identificador da categoria pai (NULL para categorias de nível superior)",
+        category_id_level0: "ID da categoria no nível 0 (nível superior)",
+        category_name_level0: "Nome da categoria no nível 0 (nível superior)",
+        category_id_level1: "ID da categoria no nível 1 (NULL se não aplicável)",
+        category_name_level1: "Nome da categoria no nível 1 (NULL se não aplicável)",
+        category_id_level2: "ID da categoria no nível 2 (NULL se não aplicável)",
+        category_name_level2: "Nome da categoria no nível 2 (NULL se não aplicável)",
+        category_id_level3: "ID da categoria no nível 3 (NULL se não aplicável)",
+        category_name_level3: "Nome da categoria no nível 3 (NULL se não aplicável)"
+    },
+    tags: ['1-general','1.1-preorder']
+}
+
+WITH RECURSIVE CategoryPath AS (
+    -- Base case: Select all root categories (those with no parent)
+    SELECT 
+        category_id, 
+        category_name, 
+        category_parent_id, 
+        category_id AS category_id_level0, 
+        category_name AS category_name_level0, 
+        CAST(NULL AS STRING) AS category_id_level1, 
+        CAST(NULL AS STRING) AS category_name_level1, 
+        CAST(NULL AS STRING) AS category_id_level2, 
+        CAST(NULL AS STRING) AS category_name_level2,
+        CAST(NULL AS STRING) AS category_id_level3, 
+        CAST(NULL AS STRING) AS category_name_level3,
+        0 AS Level
+    FROM ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_categories")}
+    WHERE is_top_level = TRUE
+
+    UNION ALL
+
+    -- Recursive step: Join with the CTE to find children and update level-specific data
+    SELECT 
+        c.category_id, 
+        c.category_name, 
+        c.category_parent_id, 
+        cp.category_id_level0,
+        cp.category_name_level0,
+        CASE 
+            WHEN cp.Level = 0 THEN c.category_id 
+            ELSE cp.category_id_level1 
+        END AS category_id_level1,
+        CASE 
+            WHEN cp.Level = 0 THEN c.category_name
+            ELSE cp.category_name_level1 
+        END AS category_name_level1,
+        CASE 
+            WHEN cp.Level = 1 THEN c.category_id
+            ELSE cp.category_id_level2 
+        END AS category_id_level2,
+        CASE 
+            WHEN cp.Level = 1 THEN c.category_name
+            ELSE cp.category_name_level2 
+        END AS category_name_level2,
+        CASE 
+            WHEN cp.Level = 2 THEN c.category_id
+            ELSE cp.category_id_level3 
+        END AS category_id_level3,
+        CASE 
+            WHEN cp.Level = 2 THEN c.category_name
+            ELSE cp.category_name_level3 
+        END AS category_name_level3,
+        cp.Level + 1
+    FROM ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_categories")} c
+    INNER JOIN CategoryPath cp ON c.category_parent_id = cp.category_id
+    WHERE cp.Level < 3  -- Limit to 4 levels (0, 1, 2, 3)
+)
+
+SELECT 
+    category_id, 
+    category_name, 
+    category_parent_id,  
+    category_id_level0, 
+    category_name_level0, 
+    category_id_level1, 
+    category_name_level1, 
+    category_id_level2, 
+    category_name_level2,
+    category_id_level3, 
+    category_name_level3
+FROM CategoryPath

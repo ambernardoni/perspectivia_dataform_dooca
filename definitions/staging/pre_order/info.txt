@@ -1,0 +1,4 @@
+Nesta pasta estão as tabelas que são apontadas para as diferentes plataformas de e-commerce, de acordo com as configurações do dataform.json.
+
+Exemplo:
+   FROM ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_categories")}

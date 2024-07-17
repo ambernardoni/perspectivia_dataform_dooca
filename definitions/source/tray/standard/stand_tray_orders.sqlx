@@ -1,9 +1,39 @@
 config {
+    description: "Padronização da tabela de pedidos",
     type: "view",
     schema: "standard",
-    description: "Cleaned up version of orders",
-    tags: ['tray'],
-    disabled: false
+    columns: {
+        _airbyte_extracted_at: "Data e hora da extração dos dados pelo Airbyte",
+        order_id: "Identificador único do pedido",
+        creation_date: "Data e hora de criação do pedido",
+        update_date: "Data e hora da última atualização do pedido",
+        status_type: "Tipo de status do pedido",
+        status_type_detail: "Detalhes do status do pedido",
+        point_of_sale: "Ponto de venda onde o pedido foi realizado",
+        value: "Estrutura contendo informações de valor do pedido",
+        "value.total": "Valor total do pedido",
+        "value.items": "Valor dos itens (temporariamente definido como 0)",
+        "value.discounts": "Valor total dos descontos aplicados",
+        "value.shipping": "Valor do frete",
+        "value.tax": "Valor dos impostos (atualmente usando o valor do desconto)",
+        payment: "Estrutura contendo informações de pagamento",
+        "payment.status_type": "Tipo de status do pagamento",
+        "payment.status_detail": "Detalhes do status do pagamento",
+        "payment.method": "Método de pagamento utilizado",
+        "payment.method_detail": "Detalhes do método de pagamento",
+        address: "Estrutura contendo informações de endereço",
+        "address.shipping_zipcode": "CEP de entrega",
+        "address.shipping_city": "Cidade de entrega",
+        "address.shipping_state": "Estado de entrega",
+        "address.shipping_country": "País de entrega",
+        customer: "Estrutura contendo informações do cliente",
+        "customer.customer_id": "Identificador único do cliente",
+        "customer.name": "Nome do cliente",
+        "customer.doc_number": "Número do documento do cliente",
+        "customer.email": "Email do cliente",
+        "customer.phone": "Telefone do cliente"
+    },
+    tags: ['tray']
 }
 
   --------------------------------------------------------------------------------------------------

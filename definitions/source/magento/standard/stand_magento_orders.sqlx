@@ -1,23 +1,109 @@
---------------------------------------------------------------------------------------------------
-  -- Converte as informações no formato da plataforma para o formato da PERSPECTIVIA
-  -- A maior parte da lógica de transformação de formatos está aqui.
-  -- DONWSTREAM: Essa view será usada pelo processamento geral (independente de plataforma]
---------------------------------------------------------------------------------------------------
-
-
 config {
+    description: "Padronização da tabela de pedidos",
     type: "view",
     schema: "standard",
-    description: "Cleaned up version of orders",
-    tags: ['magento'],
-    disabled: false
+    columns: {
+        _airbyte_extracted_at: "Data e hora da extração dos dados pelo Airbyte",
+        order_id: "Identificador único do pedido",
+        creation_date: "Data e hora de criação do pedido",
+        update_date: "Data e hora da última atualização do pedido",
+        status_type: "Tipo de status do pedido",
+        status_type_detail: "Detalhes do status do pedido",
+        point_of_sale: "Ponto de venda onde o pedido foi realizado",
+        value: "Estrutura contendo informações de valor do pedido",
+        "value.total": "Valor total do pedido",
+        "value.items": "Valor dos itens (temporariamente definido como 0)",
+        "value.discounts": "Valor total dos descontos aplicados",
+        "value.shipping": "Valor do frete",
+        "value.tax": "Valor dos impostos (atualmente usando o valor do desconto)",
+        payment: "Estrutura contendo informações de pagamento",
+        "payment.status_type": "Tipo de status do pagamento",
+        "payment.status_detail": "Detalhes do status do pagamento",
+        "payment.method": "Método de pagamento utilizado",
+        "payment.method_detail": "Detalhes do método de pagamento",
+        address: "Estrutura contendo informações de endereço",
+        "address.shipping_zipcode": "CEP de entrega",
+        "address.shipping_city": "Cidade de entrega",
+        "address.shipping_state": "Estado de entrega",
+        "address.shipping_country": "País de entrega",
+        customer: "Estrutura contendo informações do cliente",
+        "customer.customer_id": "Identificador único do cliente",
+        "customer.name": "Nome do cliente",
+        "customer.doc_number": "Número do documento do cliente",
+        "customer.email": "Email do cliente",
+        "customer.phone": "Telefone do cliente"
+    },
+    tags: ['magento']
 }
 
 SELECT
   _airbyte_extracted_at,
   SAFE_CAST(entity_id AS STRING) AS order_id,
-  DATETIME(SAFE_CAST(created_at AS TIMESTAMP), "America/Sao_Paulo") AS creation_date,
-  DATETIME(SAFE_CAST(updated_at AS TIMESTAMP), "America/Sao_Paulo") AS update_date,
+  SAFE_CAST(created_at AS DATETIME) AS creation_date,
+  SAFE_CAST(updated_at AS DATETIME) AS update_date, 
+  ${order_status_type()} AS status_type,
+  state || " - " || status AS status_type_detail,     
+  store_name AS point_of_sale,
+
+  -------------  value ---------------  
+  STRUCT 
+  (
+    SAFE_CAST(base_grand_total AS FLOAT64) AS total,
+    SAFE_CAST(base_subtotal AS FLOAT64) AS items,    
+    -SAFE_CAST(base_discount_amount AS FLOAT64) AS discounts,
+    SAFE_CAST(base_shipping_amount AS FLOAT64) AS shipping,
+    SAFE_CAST(base_tax_amount AS FLOAT64) AS tax
+  ) 
+  AS value,
+
+  -------------  payment -------------  
+  STRUCT 
+  (
+    ${order_status_type()}  AS status_type,
+    "" AS status_detail,
+    JSON_VALUE (payment ,"$.method") || " - " || JSON_VALUE (payment ,"$.cc_type") AS method,
+    JSON_VALUE (payment ,"$.method") || " - " || JSON_VALUE (payment ,"$.cc_type") AS method_detail
+  )
+  AS payment,
+
+  -------------  address -------------  
+  STRUCT 
+  (
+    JSON_VALUE (billing_address,"$.postcode") AS shipping_zipcode,
+    JSON_VALUE (billing_address,"$.region") AS shipping_city,
+    JSON_VALUE (billing_address,"$.region_code") AS shipping_state,
+    "Brasil" AS shipping_country
+  ) 
+  AS address,
+
+  -------------  customer ------------  
+  STRUCT 
+  (
+    SAFE_CAST(customer_id AS STRING) AS customer_id,
+    SAFE_CAST(customer_firstname || " " || customer_lastname AS STRING) AS name,
+    SAFE_CAST(customer_taxvat AS STRING) AS doc_number,
+    SAFE_CAST(customer_email AS STRING) AS email,
+    "" AS phone
+  ) 
+  AS customer,
 
 FROM
   ${ref("raw_magento_Orders")} O 
+
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+js {
+// Define o estado geral do pedido
+// Na Magento olhamos o campo base_total_paid. Se ele for >0 sempre foi igual a base_grand_total (o que significa pedido pago)
+// Se for 0, o pedido não foi pago ainda (Pendente ou Cancelado, consideramos como Pendente)
+// Não diferenciamos pendente de cancelado
+function order_status_type(){
+  return `
+  CASE 
+    WHEN SAFE_CAST(base_total_paid AS FLOAT64) > 0 THEN 'Aprovado'
+    ELSE 'Cancelado'  -- Optional: to categorize any other statuses
+  END`; }
+}
+

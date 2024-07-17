@@ -1,9 +1,16 @@
 config {
     type: "view",
     schema: "standard",
-    description: "Cleaned up version of orders",
-    tags: ['magento']
+    description: "Script temporário - para manter a compatibilidade",
+    tags: ['magento'],
 }
+
+SELECT
+ *
+FROM
+  ${ref("stg_prod_cat_order")}
+
+/*
 
   -- Este script extrai as informações de produtos comprados,
   -- e já prepara no formato certo para fazer parte dos pedidos depois como um ARRAY de STRUCT da tabela Orders
@@ -35,4 +42,4 @@ FROM
   -- tabela de produos
   LEFT JOIN ${ref("stand_nuvemshop_prod_cat")} prod_cat
   -- Critério do join
-       ON SAFE_CAST(JSON_VALUE(json_item, "$.product_id") AS STRING) = prod_cat.product_id
+       ON SAFE_CAST(JSON_VALUE(json_item, "$.product_id") AS STRING) = prod_cat.product_id*/

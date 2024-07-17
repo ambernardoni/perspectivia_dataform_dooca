@@ -1,0 +1,59 @@
+// Essa informação é usada para definir o status geral do pedido na tabelas orders (orders.sqlx)
+// rowConditions: [
+//        'status_type IN ("Aprovado", "Cancelado", "Pendente", "Outros")',
+//        'payment.status_type IN ("Aprovado", "Cancelado", "Pendente", "Outros")',
+//        'status_type_category IN ("Aprovado", "Cancelado", "Pendente")'
+// ]
+// SQL
+//    WHEN payment.status_type = "Cancelado" OR status_type = "Cancelado" THEN "Cancelado"
+//    WHEN payment.status_type = "Aprovado" AND status_type <> "Cancelado" THEN "Aprovado"
+//    ELSE "Pendente" 
+
+/*
+  Na Magento usamos o campo  base_total_paid, que indica o trotal efetivamente pago no pedido
+  Se for 0 não foi pago ainda, se for >0 sempre bateu com o base_grand_total (o que significa que foi pago)
+*/
+
+
+//-----------------------------------------------
+// status_type [Aprovado, Cancelado, Pendente Outros]
+
+function order_status_type(){
+  return `
+  CASE 
+    WHEN base_total_paid > 0 THEN 'Aprovado'
+    ELSE 'Pendente'  -- Optional: to categorize any other statuses
+  END`; }
+
+
+//-----------------------------------------------
+// status_type [Aprovado, Cancelado, Pendente Outros]
+/*
+function order_status_type(){
+  return `
+  CASE 
+    WHEN REGEXP_CONTAINS(state, r'(canceled|closed)') THEN 'Aprovado' --'Cancelado'
+    WHEN REGEXP_CONTAINS(state, r'(complete)') THEN 'Aprovado'
+
+    -- Status canceled e complete se sobrepõe ao State (quando state não é um dos pendentes)
+    WHEN REGEXP_CONTAINS(status, r'(complete)') THEN 'Aprovado'
+    WHEN REGEXP_CONTAINS(status, r'(canceled|fraud)') THEN 'Aprovado' --'Cancelado'
+
+    -- se não foi nada acima
+    WHEN REGEXP_CONTAINS(state, r'(processing)') AND REGEXP_CONTAINS(state, r'(processing)') THEN 'Aprovado'
+    WHEN REGEXP_CONTAINS(state, r'(new|processing|holded|pending|hold|review)') THEN  'Aprovado' --'Pendente'
+    ELSE 'Outros'  -- Optional: to categorize any other statuses
+  END`; }
+*/
+//-----------------------------------------------
+// paymet.status_type [Confirmado, Cancelado, Pendente, Outros]
+// a Tray não tem fácil o estado do pagamento. Usaremos o estado do pedido, usamos o mesmo status acima
+function payment_status_type(){
+  return order_status_type()
+}
+
+module.exports = {
+  order_status_type,
+  payment_status_type
+};
+
