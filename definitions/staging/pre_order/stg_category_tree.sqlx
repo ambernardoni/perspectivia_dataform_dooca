@@ -15,7 +15,7 @@ config {
         category_id_level3: "ID da categoria no nível 3 (NULL se não aplicável)",
         category_name_level3: "Nome da categoria no nível 3 (NULL se não aplicável)"
     },
-    tags: ['1-general','1.1-preorder']
+    tags: ['1-general']
 }
 
 -- Esse script organiza os múltiplos níveis de uma categoria
