@@ -2,7 +2,7 @@ config {
     description: "Tabela contendo a lista de produtos da loja e suas categorias",
     type: "view",
     schema: "staging",
-    tags: ['1-general','1.1-preorder']
+    tags: ['1-general']
 }
 
 -- Esse script somente junta os produtos e a árvore de categorias.

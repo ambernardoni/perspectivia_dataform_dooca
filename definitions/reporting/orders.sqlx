@@ -54,7 +54,7 @@ WITH
     *,
     ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY _airbyte_extracted_at DESC) AS rn
   FROM
-    ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_orders")}
+    ${ref("stg_orders")}
 )
 
 
@@ -75,20 +75,20 @@ SELECT
 -- Faz um join com prod_cat_order, conta as quantidades e cria um array com os pedidos
   (
     SELECT COUNT(*)
-    FROM ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_prod_cat_order")} prod_cat_order
+    FROM ${ref("stg_prod_cat_order")} prod_cat_order
     WHERE prod_cat_order.order_id = O.order_id
   ) AS quantity_variety_items,
 
   (
     SELECT SUM(prod_cat_order.quantity)
-    FROM ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_prod_cat_order")} prod_cat_order
+    FROM ${ref("stg_prod_cat_order")} prod_cat_order
     WHERE prod_cat_order.order_id = O.order_id
   ) AS quantity_items,
 
  ARRAY(
     SELECT AS STRUCT
       prod_cat_order.*
-    FROM ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_prod_cat_order")} prod_cat_order
+    FROM ${ref("stg_prod_cat_order")} prod_cat_order
     WHERE prod_cat_order.order_id = O.order_id
  ) AS items,
 

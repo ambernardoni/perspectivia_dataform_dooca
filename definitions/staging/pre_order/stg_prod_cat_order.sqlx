@@ -16,7 +16,7 @@ config {
         price_discount: "Valor do desconto aplicado ao produto",
         price_total: "Preço total do produto no pedido (quantidade * preço unitário - desconto)"
     },
-    tags: ['1-general','1.1-preorder']
+    tags: ['1-general']
 }
 
   -- Este script extrai as informações de produtos comprados,
