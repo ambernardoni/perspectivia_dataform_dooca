@@ -16,6 +16,7 @@ config {
   SELECT
     O.id as order_id,
     JSON_VALUE(P.id) AS product_id,
+    "" as product_sku,
     1 AS quantity,
     1 AS price_unit,
     0 as price_discount,
@@ -24,3 +25,4 @@ config {
   FROM
       ${ref("raw_tray_Orders")} O,
       UNNEST(JSON_EXTRACT_ARRAY(ProductsSold)) AS P
+

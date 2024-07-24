@@ -1,0 +1,20 @@
+config {
+    description: "Padronização da tebela de categorias",
+    type: "view",
+    schema: "standard",
+    columns: {
+        category_id: "Identificador único para a categoria - string ",
+        category_name: "Nome da categoria - string ",
+        category_parent_id: "Identificador da categoria pai- string ",
+        is_top_level: "Indica se a categoria é de nível superior - boolean"
+    },
+    tags: ['b4c']
+}
+
+SELECT 
+  SAFE_CAST (codigo AS STRING) AS category_id,
+  SAFE_CAST (descricao AS STRING) AS category_name, 
+  SAFE_CAST (codigo_pai AS STRING) AS category_parent_id,
+  codigo_pai = "0" as is_top_level -- Boolean - Indica se a categoria é de nível superior
+FROM
+  ${ref("raw_b4c_Categories")}

@@ -18,6 +18,8 @@ config {
     tags: ['1-general','1.1-preorder']
 }
 
+-- Esse script organiza os múltiplos níveis de uma categoria
+
 WITH RECURSIVE CategoryPath AS (
     -- Base case: Select all root categories (those with no parent)
     SELECT 

@@ -3,12 +3,12 @@ config {
     schema: "standard",
     type: "view",
     columns: {
-        order_id: "Identificador único do pedido",
-        product_id: "Identificador único do produto",
-        quantity: "Quantidade do produto no pedido",
-        price_unit: "Preço unitário do produto",
-        price_discount: "Valor do desconto aplicado ao produto",
-        price_total: "Preço total do produto no pedido"
+        order_id: "Identificador único do pedido (string)",
+        product_id: "Identificador único do produto (string)",
+        quantity: "Quantidade do produto no pedido (int64)",
+        price_unit: "Preço unitário do produto (float64)",
+        price_discount: "Valor do desconto aplicado ao produto (float64)",
+        price_total: "Preço total do produto no pedido (float64)"
     },
     tags: ['magento']
 }
@@ -24,6 +24,8 @@ WITH OrderItems AS (
 SELECT
   SAFE_CAST (order_id AS STRING) AS order_id,
   JSON_EXTRACT_SCALAR(item, '$.product_id') AS product_id,
+  JSON_EXTRACT_SCALAR(item, '$.sku') as product_sku,
+
   SAFE_CAST(JSON_EXTRACT_SCALAR(item, '$.qty_ordered') AS INT64) AS quantity,
   SAFE_CAST(JSON_EXTRACT_SCALAR(item, '$.price') AS FLOAT64) AS price_unit,
   0 as price_discount,

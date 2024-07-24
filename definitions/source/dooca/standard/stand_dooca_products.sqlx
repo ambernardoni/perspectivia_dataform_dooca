@@ -1,0 +1,19 @@
+config {
+    description: "Padronização da tabela de produtos",
+    schema: "standard",
+    type: "view",
+    columns: {
+        id: "Identificador único para a categoria - string ",
+        name: "Nome da categoria - string ",
+        parent_id: "Identificador da categoria pai- string ",
+        is_top_level: "Indica se a categoria é de nível superior - boolean"
+    },
+    tags: ['dooca']
+}
+
+SELECT 
+  SAFE_CAST (id AS STRING) AS product_id, 
+  SAFE_CAST (name AS STRING) AS product_name,
+  SAFE_CAST (category_default_id AS STRING) AS category_id, -- Identificador da categoria pai
+FROM
+  ${ref("raw_dooca_Products")}
