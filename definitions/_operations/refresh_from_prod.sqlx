@@ -1,0 +1,46 @@
+--------------------------------------------------------------------
+-- Copia todas as tabelas do dataset raw (definido em dataform.json)
+-- do ambiente pp_prod_aa para o pp_dev_dd
+-- trazendo os dados mais atuais de pdroução
+--------------------------------------------------------------------
+config { type: "operations" }
+
+-- Declare variable for the dataset name
+DECLARE dataset_name STRING DEFAULT '${dataform.projectConfig.vars.rawDataset}';
+
+-- Fixed project IDs
+DECLARE source_project_id STRING DEFAULT 'pp-prod-aa';
+DECLARE destination_project_id STRING DEFAULT 'pp-dev-dd';
+DECLARE drop_statements ARRAY<STRING>;
+
+-- Create the temporary table to store the list of tables in the source dataset
+EXECUTE IMMEDIATE format("""
+  CREATE TEMP TABLE DestinationTableList AS
+  SELECT table_name
+  FROM `%s.%s.INFORMATION_SCHEMA.TABLES`""", destination_project_id, dataset_name);
+
+CREATE TEMP TABLE DropCommandList AS
+  SELECT CAST (FORMAT("DROP TABLE `%s.%s.%s`", destination_project_id, dataset_name, table_name) AS STRING) AS command FROM DestinationTableList;
+
+FOR item IN (
+  SELECT command
+  FROM DropCommandList
+) DO EXECUTE IMMEDIATE item.command;
+END FOR;
+
+------------------------------------------------------------------------
+EXECUTE IMMEDIATE format("""
+  CREATE TEMP TABLE SourceTableList AS
+  SELECT table_name
+  FROM `%s.%s.INFORMATION_SCHEMA.TABLES`""", source_project_id, dataset_name);
+
+CREATE TEMP TABLE CopyCommandList AS
+  SELECT CAST (FORMAT("CREATE OR REPLACE TABLE `%s.%s.%s` AS SELECT * FROM `%s.%s.%s`",
+    destination_project_id, dataset_name, table_name, source_project_id, dataset_name, table_name
+  ) AS STRING) AS command FROM SourceTableList;
+
+FOR item IN (
+  SELECT command
+  FROM CopyCommandList
+) DO EXECUTE IMMEDIATE item.command;
+END FOR;

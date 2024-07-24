@@ -5,6 +5,9 @@ config {
     tags: ['1-general','1.1-preorder']
 }
 
+-- Esse script somente junta os produtos e a árvore de categorias.
+-- ele suporta apenas uma categoria principal
+
 SELECT 
   product_id,
   product_name,
@@ -18,8 +21,8 @@ SELECT
   category_name_level2,
   category_id_level3, 
   category_name_level3,
-  "" AS subcategory_id,
-  "" AS subcategory_name,
+  category_id_level1 AS subcategory_id,     -- Legado
+  category_name_level1 AS subcategory_name, -- Legado
 FROM
   ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_products")} prod
 LEFT JOIN

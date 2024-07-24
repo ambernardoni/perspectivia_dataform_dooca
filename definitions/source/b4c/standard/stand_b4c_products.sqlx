@@ -6,14 +6,13 @@ config {
         product_id: "Identificador único para a categoria - string ",
         product_name: "Nome do produto - string ",
         category_id: "Identificador da categoria do produto",
-        product_sku: "Sku do produto"
     },
-    tags: ['tray']
+    tags: ['b4c']
 }
 
 SELECT 
-  SAFE_CAST (id AS STRING) AS product_id, -- Identificador único para a categoria
-  SAFE_CAST (name AS STRING) AS product_name, -- Nome da categoria
-  SAFE_CAST (category_id AS STRING) AS category_id, -- Identificador da categoria pai
+  SAFE_CAST (codigo AS STRING) AS product_id, 
+  SAFE_CAST (nome AS STRING) AS product_name, 
+  SAFE_CAST (codigo_categoria AS STRING) AS category_id, 
 FROM
-  ${ref("raw_tray_Products")}
+  ${ref("raw_b4c_Products")}

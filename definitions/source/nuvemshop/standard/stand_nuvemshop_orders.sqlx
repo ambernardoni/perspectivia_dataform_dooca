@@ -16,8 +16,6 @@ config {
 SELECT
   _airbyte_extracted_at,
   SAFE_CAST(number AS STRING) AS order_id,
---  SAFE_CAST(created_at AS TIMESTAMP) AS creation_date,
---  SAFE_CAST(updated_at AS TIMESTAMP) AS update_date,
 
   -- IMPORTANTE AQUI - Se o formato for TIMESTAMP ou outro formado de data fora do fuso Brasil, trazer para o fuso Brasil
   DATETIME(SAFE_CAST(created_at AS TIMESTAMP), "America/Sao_Paulo") AS creation_date,
@@ -26,7 +24,7 @@ SELECT
   -- Status
   ${nuvemshop.order_status_type("status")} AS status_type,
   status AS status_type_detail,     
-  storefront AS point_of_sale, -- Dooca não guarda outros parâmteros aqui?
+  storefront AS point_of_sale, 
 
   -------------  value ---------------  
   STRUCT 

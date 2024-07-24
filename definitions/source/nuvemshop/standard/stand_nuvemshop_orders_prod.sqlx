@@ -1,0 +1,33 @@
+config {
+    description: "Padronização da tabela de produtos por pedido",
+    schema: "standard",
+    type: "view",
+    columns: {
+        order_id: "Identificador único do pedido",
+        product_id: "Identificador único do produto",
+        quantity: "Quantidade do produto no pedido",
+        price_unit: "Preço unitário do produto",
+        price_discount: "Valor do desconto aplicado ao produto",
+        price_total: "Preço total do produto no pedido"
+    },
+    tags: ['nuvemshop']
+}
+
+  SELECT
+   SAFE_CAST(O.number AS STRING)  as order_id,
+   SAFE_CAST(JSON_VALUE(json_item, "$.product_id") AS STRING) AS product_id,
+   SAFE_CAST(JSON_VALUE(json_item, "$.sku") AS STRING) AS product_sku,
+
+   -- Dados do pedido
+   SAFE_CAST(JSON_VALUE(json_item, "$.quantity") AS INT64) AS quantity,
+   SAFE_CAST(JSON_VALUE(json_item, "$.price") AS FLOAT64) AS price_unit,
+   0 as price_discount,
+   (
+   SAFE_CAST(JSON_VALUE(json_item, "$.price") AS FLOAT64) *
+   SAFE_CAST(JSON_VALUE(json_item, "$.quantity") AS FLOAT64) 
+   ) AS price_total
+
+FROM
+    -- tabela de pedidos 0 items abertos
+    ${ref("stg_nuvemshop_orders_all")} O,
+    UNNEST(JSON_EXTRACT_ARRAY(products, '$')) AS json_item

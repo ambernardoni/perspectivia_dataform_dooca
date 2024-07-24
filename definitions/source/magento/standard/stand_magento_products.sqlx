@@ -4,7 +4,7 @@ config {
     type: "view",
     columns: {
         product_id: "Identificador único para a categoria - string ",
-        name: "Nome da categoria - string ",
+        product_name: "Nome do produto - string ",
         category_id: "Identificador da categoria do produto",
         product_sku: "Sku do produto"
     },
@@ -12,9 +12,8 @@ config {
 }
 
 SELECT 
-  SAFE_CAST (id AS STRING) AS product_id, -- Identificador único para a categoria
-  SAFE_CAST (name AS STRING) AS product_name, -- Nome da categoria
+  SAFE_CAST (id AS STRING) AS product_id, 
+  SAFE_CAST (name AS STRING) AS product_name,
   SAFE_CAST (2 AS STRING) AS category_id, -- #### TEMP - PROBLEMA
-  SAFE_CAST (sku AS STRING) AS product_sku 
 FROM
   ${ref("raw_magento_Products")}
