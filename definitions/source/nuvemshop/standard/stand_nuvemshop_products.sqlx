@@ -11,6 +11,7 @@ config {
 }
 
 SELECT 
+  _airbyte_extracted_at,
   SAFE_CAST (id AS STRING) AS product_id,
   JSON_VALUE (name, "$.pt")  AS product_name,
   CAST (JSON_VALUE (categories[1], "$.id") AS STRING) AS category_id,

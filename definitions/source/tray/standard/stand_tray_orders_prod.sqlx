@@ -13,6 +13,24 @@ config {
     tags: ['tray']
 }
 
+
+-----------------------------------------------------------------------------------------------------------
+-- Colocando aqui código para para de-duplicar pedidos.
+-- as demais deduplicações de plataforma estão na camada staging, mas essa aqui não teve muito jeito.
+-- Não sei o quanto isso se encaixa aqui com uma estratégia futura de carga incremental... que deveria ser no orders
+--   mas não quis de-duplicar essa tabela depois, pois não sei se a forma de localizar registros duplicados (order_id+product_id+sku)
+--   é confiável e não vai introduzir novos problemas...
+WITH
+  order_deduplicated AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY id ORDER BY _airbyte_extracted_at DESC) AS rn
+  FROM
+    ${ref("raw_tray_Orders")} prod
+)
+
+-----------
+
   SELECT
     O.id as order_id,
     JSON_VALUE(P.id) AS product_id,
@@ -23,6 +41,6 @@ config {
     (1 * 1) AS price_total     -- price_unity * price_total
 
   FROM
-      ${ref("raw_tray_Orders")} O,
+      order_deduplicated O,
       UNNEST(JSON_EXTRACT_ARRAY(ProductsSold)) AS P
 

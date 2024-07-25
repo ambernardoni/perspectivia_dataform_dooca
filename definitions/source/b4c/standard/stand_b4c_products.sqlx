@@ -10,7 +10,8 @@ config {
     tags: ['b4c']
 }
 
-SELECT 
+SELECT
+  _airbyte_extracted_at,
   SAFE_CAST (codigo AS STRING) AS product_id, 
   SAFE_CAST (nome AS STRING) AS product_name, 
   SAFE_CAST (codigo_categoria AS STRING) AS category_id, 

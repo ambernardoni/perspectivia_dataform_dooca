@@ -12,6 +12,7 @@ config {
 }
 
 SELECT 
+  _airbyte_extracted_at,
   SAFE_CAST (codigo AS STRING) AS category_id,
   SAFE_CAST (descricao AS STRING) AS category_name, 
   SAFE_CAST (codigo_pai AS STRING) AS category_parent_id,

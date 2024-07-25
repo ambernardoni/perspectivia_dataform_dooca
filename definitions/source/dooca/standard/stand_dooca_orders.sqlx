@@ -19,7 +19,8 @@ SELECT
   SAFE_CAST(updated_at AS DATETIME) AS update_date,
 
   -- Status
-  ${dooca.order_status_type("status")} AS status_type,
+--  ${order_status_type()} AS status_type,
+  ${order_status_type_category()} AS status_type_category,
   status AS status_type_detail,     
 
   "e-commerce" AS point_of_sale, -- Dooca não guarda outros parâmteros aqui?
@@ -41,7 +42,7 @@ SELECT
   -------------  payment -------------  
   STRUCT 
   (
-    ${dooca.payment_status_type("payment_status")}  AS status_type,
+ --   ${payment_status_type()}  AS status_type,
     payment_status AS status_detail,
     JSON_VALUE (payment ,"$.method") AS method,
     JSON_VALUE (payment ,"$.name") AS method_detail
@@ -73,7 +74,51 @@ FROM
   ${ref("raw_dooca_Orders")} O
 
 
+-------------------------------------------------------------------------------
+--------------------------  DEFINIÇÂO DE RECEITA APROVADA ---------------------
 
+js {
+// Essa informação é usada para definir o status geral do pedido na tabelas orders (orders.sqlx)
+// SQL
+//    WHEN payment.status_type = "Cancelado" OR status_type = "Cancelado" THEN "Cancelado"
+//    WHEN payment.status_type = "Aprovado" AND status_type <> "Cancelado" THEN "Aprovado"
+//    ELSE "Pendente" 
+
+
+
+//-----------------------------------------------
+// status_type_gategoriy [Aprovado, Cancelado, Pendente]
+function order_status_type_category(){
+  return `
+  case
+    when (status in ('canceled') or (payment_status in ('canceled', 'refunded', 'denied', 'expired'))) then 'Cancelado'
+    when (payment_status in ('approved')) then 'Aprovado'
+    else 'Pendente'
+  end`; }
+
+//-----------------------------------------------
+// status_type [Aprovado, Cancelado, Pendente Outros]
+function order_status_type(){
+  return `
+  case
+    when status in ('archived', 'open') then 'Aprovado'
+    when status in ('canceled') then 'Cancelado'
+    else 'Outros'
+  end`; }
+
+//-----------------------------------------------
+// paymet.status_type [Confirmado, Cancelado, Pendente, Outros]
+function payment_status_type(){
+  return `
+  case
+    when payment_status in ('approved') then 'Aprovado'
+    when payment_status in ('canceled', 'refunded', 'denied', 'expired') then 'Cancelado'
+    when payment_status in ('pending') then 'Pendente'
+    else 'Outros'
+  end`; }
+
+
+}
 
 
   

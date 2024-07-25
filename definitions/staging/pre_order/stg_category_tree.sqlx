@@ -15,7 +15,7 @@ config {
         category_id_level3: "ID da categoria no nível 3 (NULL se não aplicável)",
         category_name_level3: "Nome da categoria no nível 3 (NULL se não aplicável)"
     },
-    tags: ['1-general']
+    tags: ['1-general', '1.1-preorder']
 }
 
 -- Esse script organiza os múltiplos níveis de uma categoria
@@ -35,7 +35,7 @@ WITH RECURSIVE CategoryPath AS (
         CAST(NULL AS STRING) AS category_id_level3, 
         CAST(NULL AS STRING) AS category_name_level3,
         0 AS Level
-    FROM ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_categories")}
+    FROM ${ref("stg_categories_dedup")}
     WHERE is_top_level = TRUE
 
     UNION ALL
@@ -72,7 +72,7 @@ WITH RECURSIVE CategoryPath AS (
             ELSE cp.category_name_level3 
         END AS category_name_level3,
         cp.Level + 1
-    FROM ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_categories")} c
+    FROM ${ref("stg_categories_dedup")} c
     INNER JOIN CategoryPath cp ON c.category_parent_id = cp.category_id
     WHERE cp.Level < 3  -- Limit to 4 levels (0, 1, 2, 3)
 )

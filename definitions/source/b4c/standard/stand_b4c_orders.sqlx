@@ -16,8 +16,9 @@ SELECT
   SAFE_CAST(codigo AS STRING) AS order_id,
   SAFE_CAST(data_criacao AS DATETIME) AS creation_date,
   SAFE_CAST(data_criacao AS DATETIME) AS update_date,   
- 
-  ${b4c.order_status_type("descricao_status")} AS status_type,
+
+--  ${order_status_type()} AS status_type,
+  ${order_status_group_type()} AS status_type_category,
   descricao_status AS status_type_detail,
   canal AS point_of_sale, 
   
@@ -33,7 +34,7 @@ SELECT
 
   -------------  payment -------------
   STRUCT ( 
-    ${b4c.payment_status_type("JSON_EXTRACT_SCALAR(pagamentos, '$[0].status')")}  AS status_type,
+ --   ${payment_status_type()}  AS status_type,
     JSON_EXTRACT_SCALAR(pagamentos, '$[0].status') AS status_detail,
     JSON_VALUE(pagamentos[0], '$.nome_meio_pagamento') AS method,
     JSON_VALUE(pagamentos[0], '$.nome_forma_pagamento') AS method_detail 
@@ -60,4 +61,66 @@ FROM
   ${ref("stg_b4c_orders_all")} O
 --  ${ref("raw_b4c_Orders_hist")} O
 
+
+
+
+-------------------------------------------------------------------------------
+--------------------------  DEFINIÇÂO DE RECEITA APROVADA ---------------------
+
+js {
+// Essa informação é usada para definir o status geral do pedido na tabelas orders (orders.sqlx)
+// rowConditions: [
+//        'status_type IN ("Aprovado", "Cancelado", "Pendente", "Outros")',
+//        'payment.status_type IN ("Aprovado", "Cancelado", "Pendente", "Outros")',
+//        'status_type_category IN ("Aprovado", "Cancelado", "Pendente")'
+// ]
+// SQL
+//    WHEN payment.status_type = "Cancelado" OR status_type = "Cancelado" THEN "Cancelado"
+//    WHEN payment.status_type = "Aprovado" AND status_type <> "Cancelado" THEN "Aprovado"
+//    ELSE "Pendente" 
+
+//-----------------------------------------------
+
+
+// Isso não foi totalmente refinado - entender melhor no futuro
+function order_status_group_type(){
+  return `
+  case
+    when descricao_status in ('Liberado Financeiro', 'Na Expedição', 'Nota Fiscal Emitida', 'Pedido Entregue', 'Disponível para retirada', 'Em Transporte') then 'Aprovado'
+
+    when descricao_status in ('O pagamento não foi finalizado', 'Pedido cancelado', 'Problema no Boleto', 
+      'Problemas com o Cartão', 'Cancelamento Confirmado', 'Pedido Estornado Boleto', 'Pedido Estornado Cartão') then 'Cancelado'
+    when descricao_status in ('Aguardando Pagamento', 'Transação em Andamento') then 'Pendente'
+    else 'Outros'
+  end`; 
+
+}
+
+
+
+// status_type [Aprovado, Cancelado, Pendente Outros]
+function order_status_type(){
+  return `
+  case
+    when descricao_status in ('Liberado Financeiro', 'Na Expedição', 'Nota Fiscal Emitida', 'Pedido Entregue', 'Disponível para retirada', 'Em Transporte') then 'Aprovado'
+
+    when descricao_status in ('O pagamento não foi finalizado', 'Pedido cancelado', 'Problema no Boleto', 
+      'Problemas com o Cartão', 'Cancelamento Confirmado', 'Pedido Estornado Boleto', 'Pedido Estornado Cartão') then 'Cancelado'
+    when descricao_status in ('Aguardando Pagamento', 'Transação em Andamento') then 'Pendente'
+    else 'Outros'
+  end`; }
+// O que fazer com "Aguradando pagamento"?
+
+//-----------------------------------------------
+// paymet.status_type [Confirmado, Cancelado, Pendente, Outros]
+function payment_status_type(){
+  return `
+  case
+    when JSON_EXTRACT_SCALAR(pagamentos, '$[0].status') in ('Autorizado', 'Capturado/Confirmado') then 'Aprovado'
+    when JSON_EXTRACT_SCALAR(pagamentos, '$[0].status') in ('Erro', 'Cancelado') then 'Cancelado'
+    else 'Outros'
+  end`; }
+
+
+}
 

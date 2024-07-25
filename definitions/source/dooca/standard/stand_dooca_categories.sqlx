@@ -12,6 +12,7 @@ config {
 }
 
 SELECT 
+  _airbyte_extracted_at,
   SAFE_CAST (id AS STRING) AS category_id,
   SAFE_CAST (name AS STRING) AS category_name, 
   '0' AS category_parent_id,   -- ### PENDENCIA - colocar o parent_id

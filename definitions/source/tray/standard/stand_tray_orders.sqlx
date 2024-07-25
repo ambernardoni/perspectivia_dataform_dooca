@@ -48,7 +48,7 @@ SELECT
   SAFE_CAST(modified AS DATETIME) AS update_date,
 
   -- Status
-   ${tray.order_status_type("status")} AS status_type,
+   ${order_status_type("status")} AS status_type_category,
   status AS status_type_detail,
   point_sale AS point_of_sale,
 
@@ -64,7 +64,6 @@ SELECT
   -------------  payment -------------
   STRUCT
   (
-   ${tray.order_status_type("status")} AS status_type,
    status AS status_detail,
    payment_form AS method,
    payment_form AS method_detail
@@ -93,4 +92,39 @@ SELECT
   AS customer,
 FROM
   ${ref("raw_tray_Orders")} O
+
+
+-------------------------------------------------------------------------------
+--------------------------  DEFINIÇÂO DE RECEITA APROVADA ---------------------
+
+js {
+
+/*
+// -------------------------------------------------------------------
+// REGRA DE NEGÓCIO  
+A ENVIAR VINDI             Pendente
+AGUARDANDO PAGAMENTO       Pendente
+AGUARDANDO VINDI           Pendente
+CANCELADO                  Cancelado
+CANCELADO AUT              Cancelado
+ENVIADO                    Aprovado
+FINALIZADO                 Aprovado
+PROBLEMAS NA ENTREGA       Aprovado
+*/
+
+//-----------------------------------------------
+// status_type [Aprovado, Cancelado, Pendente Outros]
+function order_status_type(status){
+  return `
+  CASE 
+    WHEN REGEXP_CONTAINS(status, r'(AGUARDANDO|A ENVIAR)') THEN 'Pendente'
+    WHEN REGEXP_CONTAINS(status, r'(CANCELADO)') THEN 'Cancelado'
+    WHEN REGEXP_CONTAINS(status, r'(ENVIADO|FINALIZADO|PROBLEMAS NA ENTREGA)') THEN 'Aprovado'
+    ELSE 'Outros'  -- Optional: to categorize any other statuses
+  END`; }
+}
+
+
+
+
 

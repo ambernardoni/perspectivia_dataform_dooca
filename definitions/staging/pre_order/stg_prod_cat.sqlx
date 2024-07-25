@@ -2,7 +2,7 @@ config {
     description: "Tabela contendo a lista de produtos da loja e suas categorias",
     type: "view",
     schema: "staging",
-    tags: ['1-general']
+    tags: ['1-general', '1.1-preorder']
 }
 
 -- Esse script somente junta os produtos e a árvore de categorias.
@@ -24,7 +24,7 @@ SELECT
   category_id_level1 AS subcategory_id,     -- Legado
   category_name_level1 AS subcategory_name, -- Legado
 FROM
-  ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_products")} prod
+  ${ref("stg_products_dedup")} prod
 LEFT JOIN
   ${ref("stg_category_tree")} cat
 ON

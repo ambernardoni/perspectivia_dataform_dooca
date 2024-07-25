@@ -1,0 +1,25 @@
+config {
+    description: "View que conecta com a tabela std_orders da plataforma",
+    type: "view",
+    schema: "staging",
+    tags: ['1-general', '1.1-preorder']
+}
+
+-------------------------------------------------------------------------------------
+-- Tira os pedidos duplicados. Em uma futura versão em que faça a carga incremental
+-- deveríamos usar os recursos do próprio Dataform na declaração da carga incremental
+WITH
+  order_deduplicated AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY _airbyte_extracted_at DESC) AS rn
+  FROM
+    ${ref("stand_"+dataform.projectConfig.vars.ecommPlatName+"_orders")} prod
+)
+
+SELECT 
+  *
+FROM
+  order_deduplicated
+WHERE
+  rn = 1 -- tira os registros duplicados
