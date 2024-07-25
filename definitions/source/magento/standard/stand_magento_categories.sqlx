@@ -18,6 +18,7 @@ config {
 WITH RECURSIVE CategoryHierarchy AS (
   -- Base case: select all top-level categories
   SELECT
+    _airbyte_extracted_at,
     SAFE_CAST(JSON_EXTRACT_SCALAR(category, '$.id') AS STRING) AS category_id,
     JSON_EXTRACT_SCALAR(category, '$.name') AS category_name,
     SAFE_CAST(JSON_EXTRACT_SCALAR(category, '$.parent_id') AS STRING) AS category_parent_id,
@@ -34,6 +35,7 @@ WITH RECURSIVE CategoryHierarchy AS (
 
   -- Recursive case: select child categories up to 3 levels
   SELECT
+    _airbyte_extracted_at,
     SAFE_CAST(JSON_EXTRACT_SCALAR(child, '$.id') AS STRING) AS category_id,
     JSON_EXTRACT_SCALAR(child, '$.name') AS category_name,
     SAFE_CAST(JSON_EXTRACT_SCALAR(child, '$.parent_id') AS STRING) AS category_parent_id,
@@ -48,6 +50,7 @@ WITH RECURSIVE CategoryHierarchy AS (
 )
 
 SELECT 
+  _airbyte_extracted_at,
   SAFE_CAST (category_id AS STRING) AS category_id,
   SAFE_CAST (category_name AS STRING) AS category_name, 
   SAFE_CAST (category_parent_id AS STRING) AS category_parent_id,

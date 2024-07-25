@@ -12,20 +12,18 @@ config {
     type: "table",
     schema: "reporting",
     description: "Pedidos realizados na loja",
-    tags: ['1-general'],
+    tags: ['1-general', '1.1-preorder'],
 
     bigquery: {
       partitionBy: "DATE(creation_date)"
     },
 
     columns: {
-      status_type: "[Aprovado], [Pendente], [Cancelado], [Outros]. Tradução da Perspectivia do status_type_detail para esses estados",
       status_type_detail: "Descrição do status que vem da plataforma de e-commerce", 
       status_type_category: "Descrição geral do status. [Cancelado] Se pedido ou pagto caneladp; [Aprovado] se pagto approvado e pedido não cancelado. [Pendente] caso contrário",
       payment: {
         description: "dados do pagamento",
         columns: {
-          status_type: "[Aprovado], [Pendente], [Cancelado], [Outros]. Tradução da Perspectivia do payment.status_detail para esses estados",
           status_detail: "Descrição do status do pagamento que vem da plataforma de e-commerce",
           method: "Método de pagamento. Vem da plataforma de e-commerce",
           method_detail: "Detalhe do método de pagamento. Vem da plataforma de e-commerce"
@@ -36,40 +34,18 @@ config {
     
     assertions: {
       uniqueKey: ["order_id"],
-      nonNull: ["order_id", "creation_date", "value.total", "status_type", "status_type_detail", "payment.status_type"],
+      nonNull: ["order_id", "creation_date", "value.total"],
       rowConditions: [
-        'status_type IN ("Aprovado", "Cancelado", "Pendente", "Outros")',
-        'payment.status_type IN ("Aprovado", "Cancelado", "Pendente", "Outros")',
         'status_type_category IN ("Aprovado", "Cancelado", "Pendente")'
       ]
     }
 }
-
--------------------------------------------------------------------------------------
--- Tira os pedidos duplicados. Em uma futura versão em que faça a carga incremental
--- deveríamos usar os recursos do próprio Dataform na declaração da carga incremental
-WITH
-  order_deduplicated AS (
-  SELECT
-    *,
-    ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY _airbyte_extracted_at DESC) AS rn
-  FROM
-    ${ref("stg_orders")}
-)
-
 
 ----------------------- MONTA A TABELA DE PEDIDOS ----------------------
 ----------- Pega os dados padronizados todos
 SELECT
   '${dataform.projectConfig.schemaSuffix}' as tenant_id,
   *,
-
------------ Monta um status geral do pedido
-  CASE 
-    WHEN payment.status_type = "Cancelado" OR status_type = "Cancelado" THEN "Cancelado"
-    WHEN payment.status_type = "Aprovado" AND status_type <> "Cancelado" THEN "Aprovado"
-    ELSE "Pendente" 
-  END AS status_type_category,
 
 -------------------------- Itens do pedido 
 -- Faz um join com prod_cat_order, conta as quantidades e cria um array com os pedidos
@@ -96,16 +72,12 @@ SELECT
 ---------------------  customer_stats   
   STRUCT ( 
     order_id,
-    MIN(CASE WHEN (payment.status_type = "Aprovado" AND status_type <> "Cancelado") THEN creation_date END) OVER (PARTITION BY customer.customer_id) AS first_order_date,
-    LAG(CASE WHEN (payment.status_type = "Aprovado" AND status_type <> "Cancelado") THEN creation_date END) OVER (PARTITION BY customer.customer_id ORDER BY creation_date) AS previous_order_date,
-    DATE_DIFF(creation_date, LAG(CASE WHEN (payment.status_type = "Aprovado" AND status_type <> "Cancelado") THEN creation_date END) OVER (PARTITION BY customer.customer_id ORDER BY creation_date), DAY) AS days_since_last_order,
-    COUNT(CASE WHEN (payment.status_type = "Aprovado" AND status_type <> "Cancelado") THEN order_id END) OVER (PARTITION BY customer.customer_id ORDER BY creation_date) - 1 AS number_of_previous_orders  
+    MIN(CASE WHEN (status_type_category = "Aprovado") THEN creation_date END) OVER (PARTITION BY customer.customer_id) AS first_order_date,
+    LAG(CASE WHEN (status_type_category = "Aprovado") THEN creation_date END) OVER (PARTITION BY customer.customer_id ORDER BY creation_date) AS previous_order_date,
+    DATE_DIFF(creation_date, LAG(CASE WHEN (status_type_category = "Aprovado") THEN creation_date END) OVER (PARTITION BY customer.customer_id ORDER BY creation_date), DAY) AS days_since_last_order,
+    COUNT(CASE WHEN (status_type_category = "Aprovado") THEN order_id END) OVER (PARTITION BY customer.customer_id ORDER BY creation_date) - 1 AS number_of_previous_orders  
   ) AS customer_stats,
 
 
 FROM
-  order_deduplicated O
-
-WHERE
-  rn = 1 -- tira os registros duplicados
-
+   ${ref("stg_orders_dedup")} O

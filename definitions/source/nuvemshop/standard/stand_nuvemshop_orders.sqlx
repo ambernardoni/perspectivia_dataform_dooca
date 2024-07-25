@@ -4,7 +4,6 @@
   -- DONWSTREAM: Essa view será usada pelo processamento geral (independente de plataforma]
 --------------------------------------------------------------------------------------------------
 
-
 config {
     type: "view",
     schema: "standard",
@@ -22,8 +21,9 @@ SELECT
   DATETIME(SAFE_CAST(updated_at AS TIMESTAMP), "America/Sao_Paulo") AS update_date,
 
   -- Status
-  ${nuvemshop.order_status_type("status")} AS status_type,
-  status AS status_type_detail,     
+  ${calc_status_type_category()} AS status_type_category,
+  status AS status_type_detail,
+  
   storefront AS point_of_sale, 
 
   -------------  value ---------------  
@@ -39,7 +39,6 @@ SELECT
  -------------  payment -------------  
   STRUCT 
   (
-    ${nuvemshop.payment_status_type("payment_status")} AS status_type,
     payment_status AS status_detail,
     JSON_VALUE (payment_details ,"$.method") AS method,
     JSON_VALUE (payment_details ,"$.credit_card_company") AS method_detail
@@ -70,3 +69,34 @@ FROM
   ${ref("stg_nuvemshop_orders_all")} O
 
 
+-------------------------------------------------------------------------------
+--------------------------  DEFINIÇÂO DE RECEITA APROVADA ---------------------
+
+js {
+// -------------------------------------------------------------------
+// A tray tem dois status: do pedido e do pagamento
+// PEDIDO
+//   ('closed') then 'Aprovado'
+//   ('cancelled') then 'Cancelado'
+//   ('open') then 'Pendente'
+// PAGAMENTO
+//   ('paid') then 'Aprovado'
+//   ('refunded') then 'Cancelado'
+//   ('pending') then 'Pendente'
+//
+// REGRA DE NEGÓCIO (isso bate com a regra da Nuvemshop de receita aprovada)
+//   (payment_status IN ('cancelled') OR (status IN ('cancelled'))) THEN 'Cancelado' 
+//   WHEN (payment_status IN ('paid') AND (status NOT IN ('cancelled'))) THEN 'Aprovado'
+//   ELSE "Pendente" 
+
+//-----------------------------------------------
+// status_type_category [Aprovado, Cancelado, Pendente, Outros]
+function calc_status_type_category(){
+  return `
+      CASE 
+        WHEN (payment_status IN ('cancelled') OR (status IN ('cancelled'))) THEN 'Cancelado' 
+        WHEN (payment_status IN ('paid') AND (status NOT IN ('cancelled'))) THEN 'Aprovado' 
+        ELSE "Pendente" 
+      END`; }
+
+}

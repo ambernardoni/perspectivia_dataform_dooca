@@ -9,7 +9,6 @@ SELECT
   '${dataform.projectConfig.schemaSuffix}' as tenant_id,
   O.order_id,
   creation_date,
-  status_type,
   status_type_detail,
   point_of_sale,
   payment,

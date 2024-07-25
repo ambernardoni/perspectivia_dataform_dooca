@@ -13,6 +13,23 @@ config {
     tags: ['nuvemshop']
 }
 
+-----------------------------------------------------------------------------------------------------------
+-- Colocando aqui código para para de-duplicar pedidos.
+-- as demais deduplicações de plataforma estão na camada staging, mas essa aqui não teve muito jeito.
+-- Não sei o quanto isso se encaixa aqui com uma estratégia futura de carga incremental... que deveria ser no orders
+--   mas não quis de-duplicar essa tabela depois, pois não sei se a forma de localizar registros duplicados (order_id+product_id+sku)
+--   é confiável e não vai introduzir novos problemas...
+WITH
+  order_deduplicated AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY number ORDER BY _airbyte_extracted_at DESC) AS rn
+  FROM
+    ${ref("stg_nuvemshop_orders_all")} prod
+)
+
+-----------------------------------------------------------------------------------------------------------------
+
   SELECT
    SAFE_CAST(O.number AS STRING)  as order_id,
    SAFE_CAST(JSON_VALUE(json_item, "$.product_id") AS STRING) AS product_id,
@@ -29,5 +46,7 @@ config {
 
 FROM
     -- tabela de pedidos 0 items abertos
-    ${ref("stg_nuvemshop_orders_all")} O,
+    order_deduplicated O,
     UNNEST(JSON_EXTRACT_ARRAY(products, '$')) AS json_item
+WHERE
+  rn =1

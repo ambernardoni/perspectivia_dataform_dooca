@@ -12,6 +12,7 @@ config {
 }
 
 SELECT 
+  _airbyte_extracted_at,
   SAFE_CAST (id AS STRING) AS product_id, -- Identificador único para a categoria
   SAFE_CAST (name AS STRING) AS product_name, -- Nome da categoria
   SAFE_CAST (category_id AS STRING) AS category_id, -- Identificador da categoria pai

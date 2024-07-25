@@ -41,7 +41,9 @@ SELECT
   SAFE_CAST(entity_id AS STRING) AS order_id,
   SAFE_CAST(created_at AS DATETIME) AS creation_date,
   SAFE_CAST(updated_at AS DATETIME) AS update_date, 
-  ${order_status_type()} AS status_type,
+
+
+  ${order_status_type()} AS  status_type_category,
   state || " - " || status AS status_type_detail,     
   store_name AS point_of_sale,
 
@@ -59,7 +61,6 @@ SELECT
   -------------  payment -------------  
   STRUCT 
   (
-    ${order_status_type()}  AS status_type,
     "" AS status_detail,
     JSON_VALUE (payment ,"$.method") || " - " || JSON_VALUE (payment ,"$.cc_type") AS method,
     JSON_VALUE (payment ,"$.method") || " - " || JSON_VALUE (payment ,"$.cc_type") AS method_detail
