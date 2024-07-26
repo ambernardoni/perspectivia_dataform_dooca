@@ -7,8 +7,8 @@
   "schemaSuffix": "ppdev",
 
   "vars": {
-    "rawDataset" : "raw_tartmello",
-    "ecommPlatName" : "dooca"
+    "rawDataset" : "raw_tdaju",
+    "ecommPlatName" : "wake"
   }
 
 }
