@@ -1,0 +1,103 @@
+--------------------------------------------------------------------------------------------------
+  -- Converte as informações no formato da plataforma para o formato da PERSPECTIVIA
+  -- A maior parte da lógica de transformação de formatos está aqui.
+  -- DONWSTREAM: Essa view será usada pelo processamento geral (independente de plataforma]
+--------------------------------------------------------------------------------------------------
+
+config {
+    type: "view",
+    schema: "standard",
+    description: "Cleaned up version of orders",
+    tags: ['wake'],
+    disabled: false
+}
+
+SELECT
+  _airbyte_extracted_at,
+  SAFE_CAST(pedidoId AS STRING) AS order_id,
+
+  -- IMPORTANTE AQUI - Se o formato for TIMESTAMP ou outro formado de data fora do fuso Brasil, trazer para o fuso Brasil
+  SAFE.PARSE_DATETIME('%Y-%m-%dT%H:%M:%S', data) AS creation_date, 
+  SAFE.PARSE_DATETIME('%Y-%m-%dT%H:%M:%S', dataUltimaAtualizacao) AS update_date, 
+
+  -- Status
+  ${calc_status_type_category()} AS status_type_category,
+  SAFE_CAST(situacaoPedidoId AS STRING) AS status_type_detail,  -- #### AQUI É SÓ O ID. PRECISAMOS DA TABELA
+  canalOrigem AS point_of_sale, 
+
+  -------------  value ---------------  
+  STRUCT 
+  (
+    SAFE_CAST(valorTotalPedido AS FLOAT64) AS total,
+    SAFE_CAST(valorSubTotalSemDescontos AS FLOAT64) AS items,
+    SAFE_CAST(valorTotalPedido-valorSubTotalSemDescontos AS FLOAT64) AS discounts,
+    SAFE_CAST(valorFrete AS FLOAT64) AS shipping,
+    0 AS tax
+  ) 
+  AS value,
+ -------------  payment -------------  
+  STRUCT 
+  (
+    "" AS status_detail,
+    JSON_VALUE (pagamento ,"$[0].formaPagamentoId") AS method, -- #### AQUI É SÓ O ID. PRECISAMOS DA TABELA
+    "" AS method_detail  -- ####
+  )
+  AS payment,
+
+  -------------  address -------------  
+  STRUCT 
+  (
+    JSON_VALUE(pedidoEndereco, '$[0].cep') AS shipping_zipcode,
+    JSON_VALUE(pedidoEndereco, '$[0].cidade') AS shipping_city,
+    JSON_VALUE(pedidoEndereco, '$[0].estado') AS shipping_state,
+    JSON_VALUE(pedidoEndereco, '$[0].pais') AS shipping_country
+  ) 
+  AS address,
+
+  -------------  customer ------------  
+  STRUCT 
+  (
+    JSON_VALUE(usuario, '$.usuarioId')  AS customer_id,
+    JSON_VALUE(usuario, '$.nome')AS name,
+    JSON_VALUE(usuario, '$.cpf')   AS doc_number,
+    JSON_VALUE(usuario, '$.email')  AS email,
+    JSON_VALUE(usuario, '$.telefoneCelular') AS phone
+  ) 
+  AS customer,
+
+FROM
+  ${ref("raw_wake_Orders")} O
+
+
+-------------------------------------------------------------------------------
+--------------------------  DEFINIÇÂO DE RECEITA APROVADA ---------------------
+
+js {
+// -------------------------------------------------------------------
+// A wake tem dois status: do pedido e do pagamento
+// SITUAÇÔES DE PEDIDOS COMO RECEITA APROVADA (pendentes ou cancelados não são)
+// (A Wake permite que altere o nome das situações)
+//   Pago (1) 
+//   Pedido enviado (*, 11)
+//   Pedido Aprovado Análise (14)
+//   Pedido Recebido (15)
+//   Pedido Separado (16)
+//   Pedido Encomendado (17)
+//   Creiditado ou entregue (18)
+//   Pedido Entregue (18)
+//   Pedido Conferido (20)
+//   Retirar na loja (21)
+
+//-----------------------------------------------
+// status_type_category [Aprovado, Cancelado, Pendente, Outros]
+function calc_status_type_category(){
+  return `
+      CASE 
+        WHEN situacaoPedidoId IN (1,9, 11,14,15,16,17,18,20,21) THEN 'Aprovado' 
+        ELSE "Cancelado" 
+      END`; }
+
+}
+
+
+

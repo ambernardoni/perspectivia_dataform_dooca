@@ -1,0 +1,21 @@
+config {
+    description: "Padronização da tebela de categorias",
+    type: "view",
+    schema: "standard",
+    columns: {
+        category_id: "Identificador único para a categoria - string ",
+        category_name: "Nome da categoria - string ",
+        category_parent_id: "Identificador da categoria pai- string ",
+        is_top_level: "Indica se a categoria é de nível superior - boolean"
+    },
+    tags: ['wake']
+}
+
+SELECT 
+  _airbyte_extracted_at,
+  SAFE_CAST (id AS STRING) AS category_id,
+  SAFE_CAST (nome AS STRING) AS category_name, 
+  SAFE_CAST (categoriaPaiId AS STRING) AS category_parent_id,
+  categoriaPaiId = 0 as is_top_level -- Boolean - Indica se a categoria é de nível superior
+FROM
+  ${ref("raw_wake_Categories")}

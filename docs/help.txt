@@ -1,5 +1,23 @@
 
 ==========================================================
+= Wake
+==========================================================
+Configurações para desenvolver Wake: 
+
+  "vars": {
+    "rawDataset" : "raw_tdaju",
+    "ecommPlatName" : "wake"
+  }
+
+TAG nos scripts: wake
+
+EXECUTION: Tags
+  1-General
+  wake
+
+
+
+==========================================================
 = Tray
 ==========================================================
 Configurações para desenvolver Tray: 

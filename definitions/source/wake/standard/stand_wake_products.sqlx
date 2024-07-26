@@ -1,0 +1,20 @@
+config {
+    description: "Padronização da tabela de produtos",
+    schema: "standard",
+    type: "view",
+    columns: {
+        product_id: "Identificador único para a categoria - string ",
+        product_name: "Nome do produto - string ",
+        category_id: "Identificador da categoria do produto",
+    },
+    tags: ['wake']
+}
+
+SELECT
+  _airbyte_extracted_at,
+  SAFE_CAST (produtoVarianteId AS STRING) AS product_id,
+  SAFE_CAST (nome AS STRING) AS product_name,
+  SAFE_CAST (parentId AS STRING) AS category_id,
+
+FROM
+  ${ref("raw_wake_Products")}
