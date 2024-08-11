@@ -1,0 +1,53 @@
+config {
+    description: "Padronização da tebela de categorias",
+    type: "view",
+    schema: "standard",
+    columns: {
+        category_id: "Identificador único para a categoria - string ",
+        category_name: "Nome da categoria - string ",
+        category_parent_id: "Identificador da categoria pai- string ",
+        is_top_level: "Indica se a categoria é de nível superior - boolean"
+    },
+    tags: ['vtex']
+}
+
+WITH RECURSIVE CategoryHierarchy AS (
+  -- Base case: select all top-level categories
+  SELECT
+    _airbyte_extracted_at,
+    id AS category_id,
+    name AS category_name,
+    CAST(NULL as STRING) AS category_parent_id,
+    TRUE AS is_top_level,
+    children AS category_json,  -- Store the entire category JSON
+    0 AS level
+  FROM
+      ${ref("raw_vtex_Categories")}
+
+  UNION ALL
+
+  -- Recursive case: select child categories up to 3 levels
+  SELECT
+    ch._airbyte_extracted_at,
+    SAFE_CAST(JSON_EXTRACT_SCALAR(child, '$.id') AS INT64) AS category_id,
+    JSON_EXTRACT_SCALAR(child, '$.name') AS category_name,
+    CAST(ch.category_id AS STRING) AS category_parent_id,
+    FALSE AS is_top_level,
+    child AS category_json,  -- Store the entire child category JSON
+    ch.level + 1 AS level
+  FROM
+    `CategoryHierarchy` ch,
+    UNNEST(JSON_EXTRACT_ARRAY(ch.category_json, '$')) AS child
+  WHERE
+    ch.level < 2  -- This ensures we only go 3 levels deep (0, 1, 2)
+)
+
+SELECT 
+  _airbyte_extracted_at,
+  SAFE_CAST (category_id AS STRING) AS category_id,
+  SAFE_CAST (category_name AS STRING) AS category_name, 
+  SAFE_CAST (category_parent_id AS STRING) AS category_parent_id,
+  is_top_level,
+FROM `CategoryHierarchy`
+ORDER BY level, category_parent_id, category_id
+

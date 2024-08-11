@@ -7,8 +7,9 @@
   "schemaSuffix": "ppdev",
 
   "vars": {
-    "rawDataset" : "raw_tdaju",
-    "ecommPlatName" : "wake"
+    "rawDataset" : "raw_tpetitejolie",
+    "ecommPlatName" : "vtex"
   }
+
 
 }

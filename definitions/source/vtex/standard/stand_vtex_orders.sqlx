@@ -1,0 +1,121 @@
+config {
+    description: "Padronização da tabela de pedidos",
+    type: "view",
+    schema: "standard",
+    columns: {
+        _airbyte_extracted_at: "Data e hora da extração dos dados pelo Airbyte",
+        order_id: "Identificador único do pedido",
+        creation_date: "Data e hora de criação do pedido",
+        update_date: "Data e hora da última atualização do pedido",
+        status_type: "Tipo de status do pedido",
+        status_type_detail: "Detalhes do status do pedido",
+        point_of_sale: "Ponto de venda onde o pedido foi realizado",
+        value: "Estrutura contendo informações de valor do pedido",
+        "value.total": "Valor total do pedido",
+        "value.items": "Valor dos itens (temporariamente definido como 0)",
+        "value.discounts": "Valor total dos descontos aplicados",
+        "value.shipping": "Valor do frete",
+        "value.tax": "Valor dos impostos (atualmente usando o valor do desconto)",
+        payment: "Estrutura contendo informações de pagamento",
+        "payment.status_type": "Tipo de status do pagamento",
+        "payment.status_detail": "Detalhes do status do pagamento",
+        "payment.method": "Método de pagamento utilizado",
+        "payment.method_detail": "Detalhes do método de pagamento",
+        address: "Estrutura contendo informações de endereço",
+        "address.shipping_zipcode": "CEP de entrega",
+        "address.shipping_city": "Cidade de entrega",
+        "address.shipping_state": "Estado de entrega",
+        "address.shipping_country": "País de entrega",
+        customer: "Estrutura contendo informações do cliente",
+        "customer.customer_id": "Identificador único do cliente",
+        "customer.name": "Nome do cliente",
+        "customer.doc_number": "Número do documento do cliente",
+        "customer.email": "Email do cliente",
+        "customer.phone": "Telefone do cliente"
+    },
+    tags: ['vtex']
+}
+
+  --------------------------------------------------------------------------------------------------
+  -- Converte as informações no formato da plataforma para o formato da PERSPECTIVIA
+  -- A maior parte da lógica de transformação de formatos está aqui.
+  -- DONWSTREAM: Essa view será usada pelo processamento geral (independente de plataforma]
+  --------------------------------------------------------------------------------------------------
+SELECT
+    _airbyte_extracted_at,
+    SAFE_CAST(orderId AS STRING) AS order_id,
+    DATETIME (TIMESTAMP(REPLACE(SUBSTR(creationDate, 1, 26), 'T', ' ')), "America/Sao_Paulo") AS  creation_date,
+    DATETIME (TIMESTAMP(REPLACE(SUBSTR(lastChange, 1, 26), 'T', ' ')), "America/Sao_Paulo") AS update_date,
+    
+    /*  Status */
+    ${order_status_type()} AS status_type_category,
+    status AS status_type_detail,
+    origin AS point_of_sale,
+
+    /*  -------------  value --------------- */
+    STRUCT(
+        SAFE_CAST(value AS FLOAT64)/100 AS total,
+        COALESCE(SAFE_CAST(JSON_EXTRACT_SCALAR(totals, '$[0].value') AS FLOAT64), 0.0)/100 AS items,
+        -1*COALESCE(SAFE_CAST(JSON_EXTRACT_SCALAR(totals, '$[1].value') AS FLOAT64), 0.0)/100 AS discounts,
+        COALESCE(SAFE_CAST(JSON_EXTRACT_SCALAR(totals, '$[2].value') AS FLOAT64), 0.0)/100 AS shipping,
+        COALESCE(SAFE_CAST(JSON_EXTRACT_SCALAR(totals, '$[3].value') AS FLOAT64), 0.0)/100 AS tax
+    ) AS value,
+    /* -------------  payment ------------- */
+    STRUCT(
+        '' AS status_detail,
+        JSON_VALUE(paymentData, '$.transactions[0].payments[0].paymentSystemName') AS method,
+        JSON_VALUE(paymentData, '$.transactions[0].payments[0].paymentSystemName')  AS method_detail
+    ) AS payment,
+    /* -------------  address ------------- */
+    STRUCT(
+        JSON_EXTRACT_SCALAR(shippingData, '$.address.postalCode') AS shipping_zipcode,
+        JSON_EXTRACT_SCALAR(shippingData, '$.address.city') AS shipping_city,
+        JSON_EXTRACT_SCALAR(shippingData, '$.address.state') AS shipping_state,
+        JSON_EXTRACT_SCALAR(shippingData, '$.address.country') AS shipping_country
+    ) AS address,
+    /* -------------  customer ------------ */
+    STRUCT(
+        JSON_EXTRACT_SCALAR(clientProfileData, '$.userProfileId') AS customer_id,
+        JSON_EXTRACT_SCALAR(clientProfileData, '$.firstName') AS name,
+        JSON_EXTRACT_SCALAR(clientProfileData, '$.document') AS doc_number,
+        JSON_EXTRACT_SCALAR(clientProfileData, '$.email') AS email,
+        JSON_EXTRACT_SCALAR(clientProfileData, '$.phone') AS phone
+    ) AS customer
+FROM
+  ${ref("raw_vtex_Orders")} O
+
+
+-------------------------------------------------------------------------------
+--------------------------  DEFINIÇÂO DE RECEITA APROVADA ---------------------
+
+js {
+
+/*
+// -------------------------------------------------------------------
+// REGRA DE NEGÓCIO  
+A ENVIAR VINDI             Pendente
+AGUARDANDO PAGAMENTO       Pendente
+AGUARDANDO VINDI           Pendente
+CANCELADO                  Cancelado
+CANCELADO AUT              Cancelado
+ENVIADO                    Aprovado
+FINALIZADO                 Aprovado
+PROBLEMAS NA ENTREGA       Aprovado
+*/
+
+//-----------------------------------------------
+// status_type [Aprovado, Cancelado, Pendente Outros]
+function order_status_type(status){
+  return `
+  CASE 
+    WHEN REGEXP_CONTAINS(status, r'(invoic|handling|approved|complet|fulfillment)') THEN 'Aprovado'
+    WHEN REGEXP_CONTAINS(status, r'(cancel|pending)') THEN 'Cancelado'
+    WHEN REGEXP_CONTAINS(status, r'(waiting)') THEN 'Pendente'
+    ELSE 'Outros'  -- Optional: to categorize any other statuses
+  END`; }
+}
+
+
+
+
+
