@@ -1,0 +1,44 @@
+config {
+    description: "Padronização da tabela de produtos por pedido",
+    schema: "standard",
+    type: "view",
+    columns: {
+        order_id: "Identificador único do pedido",
+        product_id: "Identificador único do produto",
+        quantity: "Quantidade do produto no pedido",
+        price_unit: "Preço unitário do produto",
+        price_discount: "Valor do desconto aplicado ao produto",
+        price_total: "Preço total do produto no pedido"
+    },
+    tags: ['vtex']
+}
+
+
+-----------------------------------------------------------------------------------------------------------
+-- Colocando aqui código para para de-duplicar pedidos.
+-- as demais deduplicações de plataforma estão na camada staging, mas essa aqui não teve muito jeito.
+-- Não sei o quanto isso se encaixa aqui com uma estratégia futura de carga incremental... que deveria ser no orders
+--   mas não quis de-duplicar essa tabela depois, pois não sei se a forma de localizar registros duplicados (order_id+product_id+sku)
+--   é confiável e não vai introduzir novos problemas...
+WITH
+  order_deduplicated AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY orderId ORDER BY _airbyte_extracted_at DESC) AS rn
+  FROM
+    ${ref("raw_vtex_Orders")} prod
+)
+
+-----------
+SELECT
+    O.orderId AS order_id,
+    JSON_VALUE(P.productId) AS product_id,
+    JSON_VALUE(P.sellerSku) AS product_sku,
+    SAFE_CAST(JSON_VALUE(P.quantity) as FLOAT64) AS quantity,
+    SAFE_CAST(JSON_VALUE(P.price) as FLOAT64)/100 AS price_unit,
+    0 as price_discount,
+    SAFE_CAST(JSON_VALUE(P.quantity) as FLOAT64) * SAFE_CAST(JSON_VALUE(P.price) as FLOAT64) / 100 AS price_total,
+  FROM
+      `order_deduplicated` AS O,
+      UNNEST(JSON_EXTRACT_ARRAY(O.items)) AS P
+

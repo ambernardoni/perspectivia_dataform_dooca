@@ -1,0 +1,20 @@
+config {
+    description: "Padronização da tabela de produtos",
+    schema: "standard",
+    type: "view",
+    columns: {
+        product_id: "Identificador único para a categoria - string ",
+        product_name: "Nome do produto - string ",
+        category_id: "Identificador da categoria do produto",
+        product_sku: "Sku do produto"
+    },
+    tags: ['vtex']
+}
+
+SELECT 
+  _airbyte_extracted_at,
+  SAFE_CAST (Id AS STRING) AS product_id, -- Identificador único para a categoria
+  SAFE_CAST (Name AS STRING) AS product_name, -- Nome da categoria
+  SAFE_CAST (CategoryId AS STRING) AS category_id, -- Identificador da categoria pai
+FROM
+  ${ref("raw_vtex_Products")}

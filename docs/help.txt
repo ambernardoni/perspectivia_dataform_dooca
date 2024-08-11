@@ -1,5 +1,25 @@
 
 ==========================================================
+= Vtex
+==========================================================
+Configurações para desenvolver Wake: 
+
+  "vars": {
+    "rawDataset" : "raw_tpetitejolie",
+    "ecommPlatName" : "vtex"
+  }
+
+TAG nos scripts: vtex
+
+EXECUTION: Tags
+  1-General
+  vtex
+
+
+
+
+
+==========================================================
 = Wake
 ==========================================================
 Configurações para desenvolver Wake: 
