@@ -7,7 +7,7 @@
   "schemaSuffix": "ppdev",
 
   "vars": {
-    "rawDataset" : "raw_tpetitejolie",
+    "rawDataset" : "raw_tedona",
     "ecommPlatName" : "vtex"
   }
 

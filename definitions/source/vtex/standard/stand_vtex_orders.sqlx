@@ -110,7 +110,8 @@ function order_status_type(status){
   CASE 
     WHEN REGEXP_CONTAINS(status, r'(invoic|handling|approved|complet|fulfillment)') THEN 'Aprovado'
     WHEN REGEXP_CONTAINS(status, r'(cancel|pending)') THEN 'Cancelado'
-    WHEN REGEXP_CONTAINS(status, r'(waiting)') THEN 'Pendente'
+    WHEN REGEXP_CONTAINS(status, r'(waiting|approve-payment)') THEN 'Pendente'
+    WHEN status IS NULL THEN 'Cancelado'
     ELSE 'Outros'  -- Optional: to categorize any other statuses
   END`; }
 }
