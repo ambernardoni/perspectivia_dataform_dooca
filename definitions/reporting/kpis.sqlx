@@ -15,6 +15,38 @@ config {
         'ABS (orders_captated - (orders_cancelled + orders_pending + orders)) <3',
         'ABS (revenue_total_captated - (revenue_total + revenue_total_cancelled + revenue_total_pending)) <3'
       ]
+    },
+
+    columns: {
+      date_kpi: "Data dos KPIs calculados, usada para agregação e comparação",
+      orders: "(Plat E-comm) Número de pedidos aprovados",
+      orders_captated: "(Plat E-comm) Total de pedidos captados, incluindo todos os status",
+      orders_pending: "(Plat E-comm) Total de pedidos pendentes",
+      orders_cancelled: "(Plat E-comm) Total de pedidos cancelados",
+      quantity_variety_items: "(Plat E-comm) Soma da variedade de itens nos pedidos aprovados",
+      quantity_items: "(Plat E-comm) Soma do número de itens nos pedidos aprovados",
+      revenue_total: "(Plat E-comm) Receita total dos pedidos aprovados",
+      revenue_total_captated: "(Plat E-comm) Receita total de todos os pedidos captados",
+      revenue_total_pending: "(Plat E-comm) Receita total de pedidos pendentes",
+      revenue_total_cancelled: "(Plat E-comm) Receita total de pedidos cancelados",
+      revenue_discounts: "(Plat E-comm) Total de descontos aplicados em pedidos aprovados",
+      revenue_shipping: "(Plat E-comm) Valor total de frete em pedidos aprovados",
+      goal_revenue: "Planilha Meta) Meta de faturamento estabelecida no sistema",
+      orders_repurchase_30_days: "(Plat E-comm) Pedidos feitos por clientes que realizaram recompra em até 30 dias",
+      orders_repurchase_60_days: "(Plat E-comm) Pedidos feitos por clientes que realizaram recompra em até 60 dias",
+      orders_repurchase_90_days: "(Plat E-comm) Pedidos feitos por clientes que realizaram recompra em até 90 dias",
+      orders_repurchase_120_days: "(Plat E-comm) Pedidos feitos por clientes que realizaram recompra em até 120 dias",
+      orders_repurchase_180_days: "(Plat E-comm) Pedidos feitos por clientes que realizaram recompra em até 180 dias",
+      orders_repurchase_365_days: "(Plat E-comm) Pedidos feitos por clientes que realizaram recompra em até 365 dias",
+      sessions: "(GA) Número total de sessões registrado no Google Analytics",
+      site_event_add_to_cart: "(GA) Número de eventos 'add_to_cart' registrados no site",
+      site_event_begin_checkout: "(GA) Número de eventos 'begin_checkout' registrados no site",
+      site_event_add_shipping_info: "(GA) Número de eventos 'add_shipping_info' registrados no site",
+      site_event_add_payment_info: "(GA) Número de eventos 'add_payment_info' registrados no site",
+      site_sessions: "(GA) Total de Sessions no site registradas no GA",
+      site_engaged_sessions: "(GA) Total de sessões engajadas no site registradas no GA",
+      site_total_users: "(GA) Total de usuários no site registrado no GA",
+      site_new_users: "(GA) Total de novos usuários no site registrado no GA"
     }
 }
 
