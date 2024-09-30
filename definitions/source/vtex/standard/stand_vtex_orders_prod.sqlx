@@ -29,7 +29,7 @@ WITH
     ${ref("raw_vtex_Orders")} prod
 )
 
------------
+-----------Now I wan
 SELECT
     O.orderId AS order_id,
     JSON_VALUE(P.productId) AS product_id,
